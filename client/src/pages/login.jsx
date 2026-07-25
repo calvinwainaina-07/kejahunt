@@ -1,4 +1,4 @@
-// Authentication screen and entry point to the dashboard prototype.
+// Authentication screen and entry point 
 import { Link } from "react-router-dom";
 
 export default function Login() {
