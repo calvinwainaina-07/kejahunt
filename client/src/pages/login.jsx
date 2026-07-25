@@ -92,7 +92,7 @@ export default function Login() {
 
         {/* Prompt for new users; this can link to the registration page later. */}
         <p className="text-center text-sm text-textSecondary">
-          Don&apos;t have an account?{" "}
+          Don't have an account?{" "}
           <span className="text-accent font-bold">Sign up free</span>
         </p>
       </div>
