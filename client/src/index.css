@@ -1,1 +1,21 @@
+/* Loads Tailwind utilities used by the React components. */
 @import "tailwindcss";
+
+/* KejaHunt login palette */
+@theme {
+  --color-bg: #f3f5f7; /* Soft light gray */
+  --color-surface: #ffffff; /* White */
+  --color-primary: #142849; /* Deep navy */
+  --color-primaryLight: #dfe9f3; /* Pale blue */
+  --color-accent: #f45508; /* Bright orange */
+  --color-textPrimary: #142849; /* Deep navy */
+  --color-textSecondary: #66758a; /* Muted blue-gray */
+  --color-border: #aeb9c8; /* Light blue-gray */
+}
+
+@layer base {
+  /* Gives every route the shared background and text color by default. */
+  body {
+    @apply bg-bg text-textPrimary;
+  }
+}

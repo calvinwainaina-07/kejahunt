@@ -1,3 +1,6 @@
+// Authentication screen and entry point to the dashboard prototype.
+import { Link } from "react-router-dom";
+
 export default function Login() {
   return (
     // Centers the sign-in card vertically and horizontally on the page.
@@ -22,14 +25,20 @@ export default function Login() {
           </p>
         </div>
 
-        {/* House Hunter / Property Owner toggle (static, "House Hunter" shown as active) */}
+        {/* Each role option takes the user directly to its matching workspace. */}
         <div className="flex gap-1.5 bg-primaryLight rounded-2xl p-1.5">
-          <div className="flex-1 py-3 rounded-xl text-sm font-semibold text-center text-primary shadow-sm bg-surface">
-             House Hunter
-          </div>
-          <div className="flex-1 py-3 rounded-xl text-sm font-semibold text-center text-primary shadow-sm bg-surface">
+          <Link
+            to="/dashboard"
+            className="flex-1 rounded-xl bg-primary py-3 text-center text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
+          >
+            House Hunter
+          </Link>
+          <Link
+            to="/owner"
+            className="flex-1 rounded-xl py-3 text-center text-sm font-semibold text-textSecondary transition-colors hover:bg-surface/70"
+          >
             Property Owner
-          </div>
+          </Link>
         </div>
 
         {/* Credentials form. Submission behavior will be added when authentication is connected. */}
@@ -51,9 +60,9 @@ export default function Login() {
           </Field>
 
           {/* This becomes a password-reset link once routing is added. */}
-          <span className="self-end text-accent text-sm font-semibold -mt-2">
+          <Link to="/forgot-password" className="self-end text-accent text-sm font-semibold -mt-2">
             Forgot password?
-          </span>
+          </Link>
 
           {/* Social sign-in option; connect this button to Google OAuth when authentication is added. */}
           <button
@@ -81,13 +90,13 @@ export default function Login() {
             Continue with Google
           </button>
 
-          <button
-            type="button"
+          <Link
+            to="/dashboard"
             className="bg-accent text-white font-semibold py-4 rounded-full flex items-center justify-center gap-2"
           >
             Sign In
             <span>→</span>
-          </button>
+          </Link>
         </form>
 
         {/* Prompt for new users; this can link to the registration page later. */}
