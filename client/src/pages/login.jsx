@@ -1,15 +1,18 @@
 export default function Login() {
   return (
+    // Centers the sign-in card vertically and horizontally on the page.
     <div className="min-h-screen bg-bg flex items-center justify-center p-6">
+      {/* Main authentication card. */}
       <div className="w-full max-w-[402px] bg-surface border border-border rounded-[32px] shadow-xl px-8 py-10 flex flex-col gap-4">
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-1">
           <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center text-white text-lg">
-            ⌂
+            
           </div>
           <span className="font-serif text-xl font-bold text-primary">KejaHunt</span>
         </div>
 
+        {/* Introductory copy that explains the purpose of this page. */}
         <div>
           <h1 className="font-serif text-[28px] font-bold text-textPrimary leading-tight">
             Welcome back
@@ -32,13 +35,14 @@ export default function Login() {
         {/* House Hunter / Property Owner toggle (static, "House Hunter" shown as active) */}
         <div className="flex gap-1.5 bg-primaryLight rounded-2xl p-1.5">
           <div className="flex-1 py-3 rounded-xl text-sm font-semibold text-center bg-primary text-white">
-            🔍 House Hunter
+             House Hunter
           </div>
           <div className="flex-1 py-3 rounded-xl text-sm font-semibold text-center text-textSecondary">
-            🏠 Property Owner
+            Property Owner
           </div>
         </div>
 
+        {/* Credentials form. Submission behavior will be added when authentication is connected. */}
         <form className="flex flex-col gap-4">
           <Field label="EMAIL ADDRESS">
             <input
@@ -56,6 +60,7 @@ export default function Login() {
             />
           </Field>
 
+          {/* This becomes a password-reset link once routing is added. */}
           <span className="self-end text-accent text-sm font-semibold -mt-2">
             Forgot password?
           </span>
@@ -69,6 +74,7 @@ export default function Login() {
           </button>
         </form>
 
+        {/* Prompt for new users; this can link to the registration page later. */}
         <p className="text-center text-sm text-textSecondary">
           Don&apos;t have an account?{" "}
           <span className="text-accent font-bold">Sign up free</span>
@@ -80,6 +86,7 @@ export default function Login() {
 
 function Field({ label, children }) {
   return (
+    // Reusable wrapper that gives each input a consistent label and border.
     <label className="flex flex-col gap-1.5">
       <span className="text-xs font-semibold text-textSecondary tracking-wide">{label}</span>
       <div className="border border-border/30 bg-bg rounded-lg px-3.5 py-3">{children}</div>
