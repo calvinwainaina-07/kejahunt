@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 // Password-reset screen; connect its form to an email service when the backend is ready.
 export default function ForgotPassword() {
   return (
@@ -8,6 +10,7 @@ export default function ForgotPassword() {
           Enter the email linked to your account and we'll send you a reset link.
         </p>
 
+        {/* This form validates the email field; a backend will send the actual reset email. */}
         <form className="flex flex-col gap-4">
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-textSecondary">EMAIL ADDRESS</span>
@@ -27,4 +30,3 @@ export default function ForgotPassword() {
     </div>
   );
 }
-import { Link } from "react-router-dom";

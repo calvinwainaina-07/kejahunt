@@ -1,20 +1,31 @@
 // Shared dashboard navigation; NavLink applies the active-route style.
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
+// Links are shown or hidden according to the signed-in user's role.
 const links = [
-  { to: "/dashboard", label: "Browse Homes" },
+  { to: "/dashboard", label: "House Hunter Dashboard" },
   { to: "/saved", label: "Saved Listings" },
   { to: "/roommates", label: "Roommate Matching" },
   { to: "/messages", label: "Messages" },
-  { to: "/owner", label: "My Listings (Owner)" },
+  { to: "/owner", label: "Property Owner Dashboard" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ showOwnerDashboard = true, role }) {
+  const navigate = useNavigate();
+  // A page may set its role explicitly; otherwise use the role stored at sign-in.
+  const activeRole = role || sessionStorage.getItem("kejahunt-role") || "hunter";
+  // Owners do not need saved listings, while hunters do not see owner management.
+  const visibleLinks = links.filter((link) => {
+    if ((!showOwnerDashboard || activeRole === "hunter") && link.to === "/owner") return false;
+    if (activeRole === "owner" && link.to === "/saved") return false;
+    return true;
+  });
+
   return (
     <aside className="w-60 min-h-screen bg-primary flex flex-col px-6 py-8 shrink-0">
       <h1 className="text-white text-xl font-bold mb-8">KejaHunt</h1>
       <nav className="flex flex-col gap-2">
-        {links.map((link) => (
+        {visibleLinks.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
@@ -30,7 +41,16 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
-      <span className="mt-auto text-sm text-primaryLight/70">Log out</span>
+      <button
+        type="button"
+        onClick={() => {
+          sessionStorage.removeItem("kejahunt-role");
+          navigate("/login");
+        }}
+        className="mt-auto w-fit text-sm text-primaryLight/70 transition-colors hover:text-white"
+      >
+        Log out
+      </button>
     </aside>
   );
 }

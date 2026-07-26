@@ -1,7 +1,16 @@
-import Sidebar from "../components/Sidebar";
+// Match browsing page that records connection requests during the current session.
+import { useState } from "react";
+import Sidebar from "../components/sidebar.jsx";
 import { roommates } from "../data/mockData";
 
 export default function RoommateMatching() {
+  const [connectedRoommateIds, setConnectedRoommateIds] = useState([]);
+
+  function connectWithRoommate(id) {
+    // A disabled button prevents a user from sending duplicate requests.
+    setConnectedRoommateIds((currentIds) => [...currentIds, id]);
+  }
+
   return (
     <div className="flex min-h-screen bg-bg">
       <Sidebar />
@@ -14,7 +23,10 @@ export default function RoommateMatching() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {roommates.map((r) => (
+          {roommates.map((r) => {
+            const requestSent = connectedRoommateIds.includes(r.id);
+
+            return (
             <div
               key={r.id}
               className="bg-surface border border-border rounded-2xl p-5.5 flex flex-col gap-3.5"
@@ -46,11 +58,17 @@ export default function RoommateMatching() {
                 ))}
               </div>
 
-              <button type="button" className="border border-border/30 rounded-lg py-3 text-sm font-semibold">
-                Connect
+              <button
+                type="button"
+                onClick={() => connectWithRoommate(r.id)}
+                disabled={requestSent}
+                className="rounded-lg bg-accent py-3 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {requestSent ? "Request sent" : "Connect"}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       </main>
     </div>

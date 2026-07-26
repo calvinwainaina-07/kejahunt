@@ -1,7 +1,19 @@
-// Authentication screen and entry point 
-import { Link } from "react-router-dom";
+// Authentication screen and entry point
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
+  // The chosen role decides which dashboard opens after prototype sign-in.
+  const [selectedRole, setSelectedRole] = useState("hunter");
+  const navigate = useNavigate();
+
+  function signIn(event) {
+    // Save the role for sidebar navigation until the user logs out.
+    event.preventDefault();
+    sessionStorage.setItem("kejahunt-role", selectedRole);
+    navigate(selectedRole === "owner" ? "/owner" : "/dashboard");
+  }
+
   return (
     // Centers the sign-in card vertically and horizontally on the page.
     <div className="min-h-screen bg-bg flex items-center justify-center p-6">
@@ -25,27 +37,38 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Each role option takes the user directly to its matching workspace. */}
+        {/* Choose the dashboard to open after signing in. */}
         <div className="flex gap-1.5 bg-primaryLight rounded-2xl p-1.5">
-          <Link
-            to="/dashboard"
-            className="flex-1 rounded-xl bg-primary py-3 text-center text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
+          <button
+            type="button"
+            onClick={() => setSelectedRole("hunter")}
+            className={`flex-1 rounded-xl py-3 text-center text-sm font-semibold transition-colors ${
+              selectedRole === "hunter"
+                ? "bg-primary text-white shadow-sm"
+                : "text-textSecondary hover:bg-surface/70"
+            }`}
           >
             House Hunter
-          </Link>
-          <Link
-            to="/owner"
-            className="flex-1 rounded-xl py-3 text-center text-sm font-semibold text-textSecondary transition-colors hover:bg-surface/70"
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedRole("owner")}
+            className={`flex-1 rounded-xl py-3 text-center text-sm font-semibold transition-colors ${
+              selectedRole === "owner"
+                ? "bg-primary text-white shadow-sm"
+                : "text-textSecondary hover:bg-surface/70"
+            }`}
           >
             Property Owner
-          </Link>
+          </button>
         </div>
 
         {/* Credentials form. Submission behavior will be added when authentication is connected. */}
-        <form className="flex flex-col gap-4">
+        <form onSubmit={signIn} className="flex flex-col gap-4">
           <Field label="EMAIL ADDRESS">
             <input
               type="email"
+              required
               placeholder="you@gmail.com"
               className="w-full bg-transparent outline-none text-sm placeholder:text-textSecondary/70"
             />
@@ -54,6 +77,7 @@ export default function Login() {
           <Field label="PASSWORD">
             <input
               type="password"
+              required
               placeholder="••••••••"
               className="w-full bg-transparent outline-none text-sm placeholder:text-textSecondary/70"
             />
@@ -90,19 +114,19 @@ export default function Login() {
             Continue with Google
           </button>
 
-          <Link
-            to="/dashboard"
+          <button
+            type="submit"
             className="bg-accent text-white font-semibold py-4 rounded-full flex items-center justify-center gap-2"
           >
             Sign In
             <span>→</span>
-          </Link>
+          </button>
         </form>
 
         {/* Prompt for new users; this can link to the registration page later. */}
         <p className="text-center text-sm text-textSecondary">
           Don't have an account?{" "}
-          <span className="text-accent font-bold">Sign up free</span>
+          <Link to="/signup" className="text-accent font-bold hover:underline">Sign up free</Link>
         </p>
       </div>
     </div>

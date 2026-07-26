@@ -1,22 +1,53 @@
-import Sidebar from "../components/Sidebar";
+// Owner workspace for managing the user's property listings.
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import Sidebar from "../components/sidebar.jsx";
 import { properties } from "../data/mockData";
 
 export default function OwnerDashboard() {
+  // Local state lets the table update immediately after a listing is deleted.
+  const [listings, setListings] = useState(properties);
+  const activeListings = listings.filter((listing) => listing.status === "Active").length;
+  const draftListings = listings.filter((listing) => listing.status === "Draft").length;
+
+  function deleteListing(id) {
+    // Keep the shared mock collection and the currently rendered table in sync.
+    const listingIndex = properties.findIndex((listing) => listing.id === id);
+    if (listingIndex !== -1) properties.splice(listingIndex, 1);
+    setListings((currentListings) => currentListings.filter((listing) => listing.id !== id));
+  }
+
   return (
     <div className="flex min-h-screen bg-bg">
-      <Sidebar />
+      <Sidebar role="owner" />
       <main className="flex-1 px-12 py-10 flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[28px] font-bold text-textPrimary">My Listings</h1>
+            <p className="text-sm font-semibold text-accent">Property Owner Dashboard</p>
+            <h1 className="mt-1 text-[28px] font-bold text-textPrimary">My Listings</h1>
             <p className="text-textSecondary text-sm mt-1">
               Create, update, and manage your house listings
             </p>
           </div>
-          <button type="button" className="bg-accent text-white text-sm font-semibold px-5 py-3 rounded-lg">
+          <Link to="/owner/new-listing" className="bg-accent text-white text-sm font-semibold px-5 py-3 rounded-lg">
             + New Listing
-          </button>
+          </Link>
         </div>
+
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-border bg-surface p-4">
+            <p className="text-xs font-medium text-textSecondary">TOTAL LISTINGS</p>
+            <p className="mt-2 text-2xl font-bold text-textPrimary">{listings.length}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-4">
+            <p className="text-xs font-medium text-textSecondary">ACTIVE LISTINGS</p>
+            <p className="mt-2 text-2xl font-bold text-success">{activeListings}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-surface p-4">
+            <p className="text-xs font-medium text-textSecondary">DRAFT LISTINGS</p>
+            <p className="mt-2 text-2xl font-bold text-primary">{draftListings}</p>
+          </div>
+        </section>
 
         <div className="bg-surface border border-border rounded-2xl overflow-hidden">
           <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1.2fr] gap-4 px-5 py-3 text-xs font-semibold text-textSecondary border-b border-border/20">
@@ -26,7 +57,7 @@ export default function OwnerDashboard() {
             <span>STATUS</span>
             <span>ACTIONS</span>
           </div>
-          {properties.map((l) => (
+          {listings.map((l) => (
             <div
               key={l.id}
               className="grid grid-cols-[2fr_1fr_1fr_1fr_1.2fr] gap-4 px-5 py-4.5 items-center border-b border-border/10 last:border-b-0"
@@ -44,12 +75,15 @@ export default function OwnerDashboard() {
                 </span>
               </span>
               <span className="flex gap-3.5 text-sm font-medium">
-                <span className="text-primary">View</span>
-                <span className="text-primary">Edit</span>
-                <span className="text-danger">Delete</span>
+                <Link to={`/property/${l.id}`} className="text-primary">View</Link>
+                <Link to={`/owner/edit/${l.id}`} className="text-primary">Edit</Link>
+                <button type="button" onClick={() => deleteListing(l.id)} className="text-danger">Delete</button>
               </span>
             </div>
           ))}
+          {listings.length === 0 && (
+            <p className="px-5 py-10 text-center text-sm text-textSecondary">You do not have any listings yet.</p>
+          )}
         </div>
       </main>
     </div>
