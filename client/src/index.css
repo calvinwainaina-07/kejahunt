@@ -19,3 +19,10 @@
     @apply bg-bg text-textPrimary;
   }
 }
+
+@layer components {
+  /* Shared form control used by the dedicated roommate profile screen. */
+  .input {
+    @apply w-full rounded-lg border border-border/40 px-3 py-2.5 outline-none focus:border-primary;
+  }
+}

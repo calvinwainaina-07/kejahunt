@@ -1,8 +1,11 @@
+// TEMPORARY PROTOTYPE DATA: replace the imported property fixtures with API-fetched listings.
 // House-hunter dashboard containing search controls and property cards.
 import { useState } from "react";
 import Sidebar from "../components/sidebar.jsx";
 import PropertyCard from "../components/propertycard.jsx";
+import { Link } from "react-router-dom";
 import { properties } from "../data/mockData";
+import { readNotificationsForRole, readViewingRequests } from "../data/Storage.js";
 
 // Each option supplies the price check used by the selected rent filter.
 const rentRanges = {
@@ -18,6 +21,8 @@ export default function HunterDashboard() {
   const [rentRange, setRentRange] = useState("any");
   const [propertyType, setPropertyType] = useState("any");
   const [activeFilters, setActiveFilters] = useState({ searchText: "", rentRange: "any", propertyType: "any" });
+  const unreadNotifications = readNotificationsForRole("hunter").filter((notification) => !notification.read).length;
+  const pendingViewings = readViewingRequests().filter((request) => request.hunter === "You" && request.status === "Pending").length;
 
   function handleSearch(event) {
     // Prevent a page reload and commit all current filter controls at once.
@@ -37,7 +42,7 @@ export default function HunterDashboard() {
 
   return (
     <div className="flex min-h-screen bg-bg">
-      <Sidebar showOwnerDashboard={false} />
+      <Sidebar />
       <main className="flex-1 px-12 py-10 flex flex-col gap-7">
         <div>
           <p className="text-sm font-semibold text-accent">House Hunter Dashboard</p>
@@ -45,6 +50,33 @@ export default function HunterDashboard() {
           <p className="mt-1 text-sm text-textSecondary">Search and compare available homes that match your needs.</p>
         </div>
 
+        {/* Dashboard shortcuts keep viewing requests and account activity easy to find after sign-in. */}
+        <section className="grid gap-4 sm:grid-cols-2">
+          <Link to="/bookings" className="rounded-2xl border border-border bg-surface p-5 transition-shadow hover:shadow-md">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-textSecondary">VIEWING REQUESTS</p>
+                <h2 className="mt-2 text-lg font-bold text-textPrimary">Manage your appointments</h2>
+                <p className="mt-1 text-sm text-textSecondary">{pendingViewings ? `${pendingViewings} request awaiting an owner response.` : "Request and track property viewings."}</p>
+              </div>
+              <span className="rounded-full bg-primaryLight px-3 py-1 text-sm font-bold text-primary">{pendingViewings}</span>
+            </div>
+            <p className="mt-4 text-sm font-semibold text-accent">Open viewing requests →</p>
+          </Link>
+          <Link to="/notifications" className="rounded-2xl border border-border bg-surface p-5 transition-shadow hover:shadow-md">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-textSecondary">NOTIFICATIONS</p>
+                <h2 className="mt-2 text-lg font-bold text-textPrimary">Keep up with your activity</h2>
+                <p className="mt-1 text-sm text-textSecondary">Viewing decisions, messages, listing updates, and roommate requests.</p>
+              </div>
+              <span className="rounded-full bg-accent px-3 py-1 text-sm font-bold text-white">{unreadNotifications}</span>
+            </div>
+            <p className="mt-4 text-sm font-semibold text-accent">Open notifications →</p>
+          </Link>
+        </section>
+
+        {/* Filters only apply when the user submits, avoiding unnecessary list updates. */}
         <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-3 bg-surface border border-border rounded-xl px-4 py-3.5">
           <input
             value={searchText}
@@ -74,6 +106,7 @@ export default function HunterDashboard() {
           {filteredProperties.length} homes available in Nairobi
         </p>
 
+        {/* Each card navigates to a property-specific details page. */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((p) => (
             <PropertyCard key={p.id} property={p} />

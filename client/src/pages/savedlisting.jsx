@@ -1,3 +1,4 @@
+// TEMPORARY PROTOTYPE DATA: replace local saved-listing state with authenticated API requests.
 // Saved-listing page with removal actions stored in component state.
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -5,6 +6,7 @@ import Sidebar from "../components/sidebar.jsx";
 import { properties } from "../data/mockData";
 
 export default function SavedListings() {
+  // Start with the fixture data; removing a card only affects this page's local state.
   const [savedListings, setSavedListings] = useState(properties);
 
   function removeListing(id) {
@@ -25,6 +27,7 @@ export default function SavedListings() {
           </p>
         </div>
 
+        {/* Show saved homes, or an empty-state route back to browsing. */}
         <div className="flex flex-col gap-3">
           {savedListings.map((p) => (
             <div

@@ -1,5 +1,5 @@
 // Central route map for every screen in the KejaHunt application.
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/login.jsx";
 import SignUp from "./pages/signup.jsx";
@@ -10,11 +10,18 @@ import RoommateMatching from "./pages/roommatematching.jsx";
 import OwnerDashboard from "./pages/ownerdashboard.jsx";
 import NewListingDashboard from "./pages/newlistingdashboard.jsx";
 import Messaging from "./pages/messaging.jsx";
+import Profile from "./pages/profile.jsx";
+import PropertyDetails from "./pages/propertydetails.jsx";
+import Bookings from "./pages/bookings.jsx";
+import Notifications from "./pages/notifications.jsx";
+import RoommateProfile from "./pages/roommateprofile.jsx";
+import Home from "./pages/home.jsx";
 
 export default function App() {
+  // All page-level navigation is declared here to keep URLs in one central place.
   return (
-    // BrowserRouter enables client-side navigation without full page reloads.
-    <BrowserRouter>
+    // HashRouter keeps each screen reachable when the app is served from VS Code or a static host.
+    <HashRouter>
       <Routes>
         {/* Authentication and core house-hunter routes. */}
         <Route path="/login" element={<Login />} />
@@ -23,15 +30,20 @@ export default function App() {
         <Route path="/dashboard" element={<HunterDashboard />} />
         <Route path="/saved" element={<SavedListings />} />
         <Route path="/roommates" element={<RoommateMatching />} />
+        <Route path="/roommate-profile" element={<RoommateProfile />} />
         <Route path="/owner" element={<OwnerDashboard />} />
         <Route path="/owner/new-listing" element={<NewListingDashboard />} />
         <Route path="/owner/edit/:id" element={<NewListingDashboard />} />
         <Route path="/messages" element={<Messaging />} />
+        <Route path="/bookings" element={<Bookings />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/profile" element={<Profile />} />
+        {/* Dynamic route: id identifies the listing selected by the user. */}
+        <Route path="/property/:id" element={<PropertyDetails />} />
 
-        {/* Default and unknown URLs always return users to the login page. */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Home />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

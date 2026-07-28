@@ -1,4 +1,5 @@
-// Prototype registration page that routes a new user to their selected role's workspace.
+// TEMPORARY PROTOTYPE AUTH: submit this form to the backend instead of localStorage when the API is ready.
+// Registration page that routes a new user to their selected role's workspace.
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -10,6 +11,19 @@ export default function SignUp() {
   function createAccount(event) {
     // Browser validation runs first; persist the role before routing the user.
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    // Persist form values locally until the project is connected to an API.
+    localStorage.setItem(
+      "kejahunt-profile",
+      JSON.stringify({
+        fullName: formData.get("fullName"),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        location: "",
+        // This demo has no backend yet, so credentials only exist in browser storage.
+        password: formData.get("password"),
+      }),
+    );
     sessionStorage.setItem("kejahunt-role", selectedRole);
     navigate(selectedRole === "owner" ? "/owner" : "/dashboard");
   }
@@ -36,15 +50,19 @@ export default function SignUp() {
           </button>
         </div>
 
+        {/* Required fields create the initial profile shown on the My Profile page. */}
         <form onSubmit={createAccount} className="flex flex-col gap-4">
           <Field label="FULL NAME">
-            <input required type="text" placeholder="Your name" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
+            <input required name="fullName" type="text" placeholder="Your name" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
           </Field>
           <Field label="EMAIL ADDRESS">
-            <input required type="email" placeholder="you@gmail.com" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
+            <input required name="email" type="email" placeholder="you@gmail.com" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
+          </Field>
+          <Field label="PHONE NUMBER">
+            <input required name="phone" type="tel" placeholder="e.g. +254 700 000 000" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
           </Field>
           <Field label="PASSWORD">
-            <input required minLength="6" type="password" placeholder="At least 6 characters" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
+            <input required minLength="6" name="password" type="password" placeholder="At least 6 characters" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
           </Field>
           <button type="submit" className="rounded-full bg-accent py-4 font-semibold text-white">
             Create free account
@@ -60,6 +78,7 @@ export default function SignUp() {
 }
 
 function Field({ label, children }) {
+  // Shared labelled input wrapper keeps registration fields visually consistent.
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-xs font-semibold tracking-wide text-textSecondary">{label}</span>

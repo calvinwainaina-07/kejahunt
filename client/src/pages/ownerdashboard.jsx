@@ -1,14 +1,19 @@
+// TEMPORARY PROTOTYPE DATA: replace direct mock listing edits with owner listing API requests.
 // Owner workspace for managing the user's property listings.
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
 import { properties } from "../data/mockData";
+import { readNotificationsForRole, readViewingRequests } from "../data/Storage.js";
 
 export default function OwnerDashboard() {
   // Local state lets the table update immediately after a listing is deleted.
   const [listings, setListings] = useState(properties);
+  // Summary values are derived from the current table data on every render.
   const activeListings = listings.filter((listing) => listing.status === "Active").length;
   const draftListings = listings.filter((listing) => listing.status === "Draft").length;
+  const unreadNotifications = readNotificationsForRole("owner").filter((notification) => !notification.read).length;
+  const pendingRequests = readViewingRequests().filter((request) => request.hunter !== "You" && request.status === "Pending").length;
 
   function deleteListing(id) {
     // Keep the shared mock collection and the currently rendered table in sync.
@@ -29,11 +34,17 @@ export default function OwnerDashboard() {
               Create, update, and manage your house listings
             </p>
           </div>
-          <Link to="/owner/new-listing" className="bg-accent text-white text-sm font-semibold px-5 py-3 rounded-lg">
-            + New Listing
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link to="/bookings" className="rounded-lg border border-primary px-5 py-3 text-sm font-semibold text-primary hover:bg-primaryLight">
+              Viewing requests
+            </Link>
+            <Link to="/owner/new-listing" className="bg-accent text-white text-sm font-semibold px-5 py-3 rounded-lg">
+              + New Listing
+            </Link>
+          </div>
         </div>
 
+        {/* Quick totals give an owner an overview before the detailed table. */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-border bg-surface p-4">
             <p className="text-xs font-medium text-textSecondary">TOTAL LISTINGS</p>
@@ -49,6 +60,33 @@ export default function OwnerDashboard() {
           </div>
         </section>
 
+        {/* Owners see notification activity and outstanding viewing requests immediately after sign-in. */}
+        <section className="grid gap-4 sm:grid-cols-2">
+          <Link to="/bookings" className="rounded-2xl border border-border bg-surface p-5 transition-shadow hover:shadow-md">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-textSecondary">VIEWING REQUESTS</p>
+                <h2 className="mt-2 text-lg font-bold text-textPrimary">Review appointments</h2>
+                <p className="mt-1 text-sm text-textSecondary">Accept, decline, or reschedule hunter viewing requests.</p>
+              </div>
+              <span className="rounded-full bg-primaryLight px-3 py-1 text-sm font-bold text-primary">{pendingRequests}</span>
+            </div>
+            <p className="mt-4 text-sm font-semibold text-accent">Open viewing requests →</p>
+          </Link>
+          <Link to="/notifications" className="rounded-2xl border border-border bg-surface p-5 transition-shadow hover:shadow-md">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-textSecondary">NOTIFICATIONS</p>
+                <h2 className="mt-2 text-lg font-bold text-textPrimary">Stay informed</h2>
+                <p className="mt-1 text-sm text-textSecondary">See messages, viewing activity, and listing updates.</p>
+              </div>
+              <span className="rounded-full bg-accent px-3 py-1 text-sm font-bold text-white">{unreadNotifications}</span>
+            </div>
+            <p className="mt-4 text-sm font-semibold text-accent">Open notifications →</p>
+          </Link>
+        </section>
+
+        {/* Listing-management table with view, edit, and delete actions. */}
         <div className="bg-surface border border-border rounded-2xl overflow-hidden">
           <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1.2fr] gap-4 px-5 py-3 text-xs font-semibold text-textSecondary border-b border-border/20">
             <span>LISTING</span>

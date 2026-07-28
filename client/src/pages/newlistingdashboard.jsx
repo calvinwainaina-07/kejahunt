@@ -1,3 +1,4 @@
+// TEMPORARY PROTOTYPE DATA: send creates and edits to the backend instead of modifying mock data.
 // Shared form for creating a listing or editing an existing one.
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
@@ -23,6 +24,7 @@ export default function NewListingDashboard() {
       description: formData.get("description"),
     };
 
+    // Reuse the same form for both flows, based on whether the route includes a listing id.
     if (isEditing) {
       // Update the current in-memory listing.
       Object.assign(listing, listingDetails);
@@ -52,6 +54,7 @@ export default function NewListingDashboard() {
             {isEditing ? "Update the details of your property listing." : "Add the details of the property you would like to list."}
           </p>
 
+          {/* defaultValue fills fields when editing without making the whole form controlled. */}
           <form onSubmit={handleSubmit} className="mt-7 rounded-2xl border border-border bg-surface p-6">
             <div className="grid gap-5 sm:grid-cols-2">
               <label className="flex flex-col gap-2 text-sm font-medium text-textPrimary sm:col-span-2">

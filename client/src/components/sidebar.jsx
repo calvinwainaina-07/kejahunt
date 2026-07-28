@@ -1,3 +1,4 @@
+// TEMPORARY PROTOTYPE AUTH: the role currently comes from sessionStorage; use backend session data later.
 // Shared dashboard navigation; NavLink applies the active-route style.
 import { NavLink, useNavigate } from "react-router-dom";
 
@@ -6,7 +7,10 @@ const links = [
   { to: "/dashboard", label: "House Hunter Dashboard" },
   { to: "/saved", label: "Saved Listings" },
   { to: "/roommates", label: "Roommate Matching" },
+  { to: "/bookings", label: "Viewing Requests" },
   { to: "/messages", label: "Messages" },
+  { to: "/notifications", label: "Notifications" },
+  { to: "/profile", label: "My Profile" },
   { to: "/owner", label: "Property Owner Dashboard" },
 ];
 
@@ -17,7 +21,7 @@ export default function Sidebar({ showOwnerDashboard = true, role }) {
   // Owners do not need saved listings, while hunters do not see owner management.
   const visibleLinks = links.filter((link) => {
     if ((!showOwnerDashboard || activeRole === "hunter") && link.to === "/owner") return false;
-    if (activeRole === "owner" && link.to === "/saved") return false;
+    if (activeRole === "owner" && ["/saved", "/roommates"].includes(link.to)) return false;
     return true;
   });
 
@@ -41,6 +45,7 @@ export default function Sidebar({ showOwnerDashboard = true, role }) {
           </NavLink>
         ))}
       </nav>
+      {/* Clearing the session role makes the next visit start with a new role choice. */}
       <button
         type="button"
         onClick={() => {
