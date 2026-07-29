@@ -27,7 +27,7 @@ export default function Login() {
         {/* Brand area. */}
         <div className="flex items-center gap-2.5 mb-1">
           <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center text-white text-lg">
-            
+
           </div>
           <span className="font-serif text-xl font-bold text-primary">KejaHunt</span>
         </div>

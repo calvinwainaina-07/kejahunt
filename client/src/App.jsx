@@ -15,7 +15,6 @@ import PropertyDetails from "./pages/propertydetails.jsx";
 import Bookings from "./pages/bookings.jsx";
 import Notifications from "./pages/notifications.jsx";
 import RoommateProfile from "./pages/roommateprofile.jsx";
-import Home from "./pages/home.jsx";
 
 export default function App() {
   // All page-level navigation is declared here to keep URLs in one central place.
@@ -41,7 +40,7 @@ export default function App() {
         {/* Dynamic route: id identifies the listing selected by the user. */}
         <Route path="/property/:id" element={<PropertyDetails />} />
 
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>
