@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
 import { properties } from "../data/mockData.js";
-import { addNotification, readViewingRequests, saveViewingRequests } from "../data/prototypeStorage.js";
+import { addNotification, readViewingRequests, saveViewingRequests } from "../data/Storage.js";
 
 const times = ["09:00", "10:00", "11:30", "14:00", "15:30", "17:00"];
 

@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
-import { readNotificationsForRole, saveNotifications } from "../data/prototypeStorage.js";
+import { readNotificationsForRole, saveNotifications } from "../data/Storage.js";
 
 const icons = { Viewing: "◷", Message: "✉", Listing: "⌂", Roommate: "♧" };
 const routes = { Viewing: "/bookings", Message: "/messages", Listing: "/saved", Roommate: "/roommates" };
