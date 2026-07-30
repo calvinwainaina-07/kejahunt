@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.database import get_db
+from app.models.user import User
 from app.schemas.property import PropertyCreate, PropertyResponse
 from app.crud.property import (
     create_property,
@@ -14,6 +18,8 @@ router = APIRouter(
     prefix="/properties",
     tags=["Properties"]
 )
+
+CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 @router.get("/", response_model=list[PropertyResponse])
@@ -29,22 +35,34 @@ def read_property(property_id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=PropertyResponse)
 def add_property(
     property: PropertyCreate,
-    db: Session = Depends(get_db)
+    current_user: CurrentUser,
+    db: Session = Depends(get_db),
 ):
-    owner_id = 1
+    if current_user.role != "owner" or current_user.property_owner is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only property owners can create listings",
+        )
 
     return create_property(
         db,
         property,
-        owner_id
+        current_user.property_owner.id,
     )
 
 
 @router.delete("/{property_id}")
 def remove_property(
     property_id: int,
-    db: Session = Depends(get_db)
+    current_user: CurrentUser,
+    db: Session = Depends(get_db),
 ):
+    property = get_property(db, property_id)
+    if property is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    if current_user.role != "owner" or property.owner.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot delete this listing")
+
     delete_property(db, property_id)
 
     return {"message": "Property deleted successfully"}

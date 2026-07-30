@@ -11,6 +11,8 @@ from app.auth.dependencies import COOKIE_NAME, get_current_user
 from app.auth.schemas import AuthResponse, LoginRequest, RegisterRequest
 from app.auth.utils import create_access_token, hash_password, verify_password
 from app.database import get_db
+from app.models.house_hunter import HouseHunter
+from app.models.property_owner import PropertyOwner
 from app.models.user import User
 
 
@@ -49,6 +51,11 @@ def register(data: RegisterRequest, response: Response, db: DatabaseSession) -> 
     )
     db.add(user)
     try:
+        db.flush()
+        if user.role == "owner":
+            db.add(PropertyOwner(user_id=user.id))
+        else:
+            db.add(HouseHunter(user_id=user.id))
         db.commit()
     except IntegrityError:
         db.rollback()
