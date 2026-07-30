@@ -1,5 +1,6 @@
 // TEMPORARY PROTOTYPE DATA: send creates and edits to the backend instead of modifying mock data.
 // Shared form for creating a listing or editing an existing one.
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
 import { properties } from "../data/mockData";
@@ -10,6 +11,32 @@ export default function NewListingDashboard() {
   // An id in the URL switches this form from create mode to edit mode.
   const listing = properties.find((property) => property.id === Number(id));
   const isEditing = Boolean(listing);
+  const [images, setImages] = useState(listing?.images || []);
+  const [imageError, setImageError] = useState("");
+
+  async function addImages(event) {
+    const selectedFiles = Array.from(event.target.files || []);
+    const remainingSlots = 5 - images.length;
+    const acceptedFiles = selectedFiles.filter((file) => file.type.startsWith("image/")).slice(0, remainingSlots);
+
+    setImageError(
+      selectedFiles.length > remainingSlots
+        ? "You can add up to five photos per listing."
+        : selectedFiles.length !== acceptedFiles.length
+          ? "Only image files can be added."
+          : "",
+    );
+
+    const newImages = await Promise.all(acceptedFiles.map(readImage));
+    setImages((currentImages) => [...currentImages, ...newImages]);
+    // Reset the field so the owner can select the same file again if needed.
+    event.target.value = "";
+  }
+
+  function removeImage(indexToRemove) {
+    setImages((currentImages) => currentImages.filter((_, index) => index !== indexToRemove));
+    setImageError("");
+  }
 
   function handleSubmit(event) {
     // FormData collects the uncontrolled form inputs in one place.
@@ -22,6 +49,7 @@ export default function NewListingDashboard() {
       bedrooms: Number(formData.get("bedrooms")),
       bathrooms: Number(formData.get("bathrooms")),
       description: formData.get("description"),
+      images,
     };
 
     // Reuse the same form for both flows, based on whether the route includes a listing id.
@@ -87,6 +115,25 @@ export default function NewListingDashboard() {
                 Description
                 <textarea required name="description" rows="5" defaultValue={listing?.description} placeholder="Describe the property, its location, and amenities." className="resize-y rounded-lg border border-border px-3.5 py-3 font-normal outline-none focus:border-primary" />
               </label>
+              <div className="sm:col-span-2">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <label htmlFor="property-images" className="text-sm font-medium text-textPrimary">Property photos</label>
+                  <span className="text-xs text-textSecondary">Up to 5 photos</span>
+                </div>
+                <p className="mt-1 text-sm text-textSecondary">Add clear photos of the exterior, rooms, and amenities.</p>
+                <input id="property-images" type="file" accept="image/*" multiple onChange={addImages} className="mt-3 block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-primaryLight file:px-3 file:py-2 file:font-semibold file:text-primary hover:file:bg-primaryLight/70" />
+                {imageError && <p className="mt-2 text-sm text-red-600">{imageError}</p>}
+                {images.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {images.map((image, index) => (
+                      <div key={`${image}-${index}`} className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-border bg-primaryLight">
+                        <img src={image} alt={`Property preview ${index + 1}`} className="h-full w-full object-cover" />
+                        <button type="button" onClick={() => removeImage(index)} className="absolute right-2 top-2 rounded-md bg-white/95 px-2 py-1 text-xs font-semibold text-textPrimary shadow-sm hover:bg-white" aria-label={`Remove photo ${index + 1}`}>Remove</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <Link to="/owner" className="rounded-lg border border-border px-5 py-3 text-sm font-semibold text-textPrimary">Cancel</Link>
@@ -97,4 +144,13 @@ export default function NewListingDashboard() {
       </main>
     </div>
   );
+}
+
+function readImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("The selected image could not be read."));
+    reader.readAsDataURL(file);
+  });
 }
