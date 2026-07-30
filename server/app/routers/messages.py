@@ -9,6 +9,7 @@ from app.models.message import Message
 from app.models.property import Property
 from app.models.user import User
 from app.schemas.message import MessageCreate, MessageResponse
+from app.services.notif_service import create_notification
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
 CurrentUser = Annotated[User, Depends(get_current_user)]
@@ -46,4 +47,15 @@ def create_message(data: MessageCreate, current_user: CurrentUser, db: Session =
     db.add(message)
     db.commit()
     db.refresh(message)
+
+    create_notification(
+        db,
+        user_id=receiver.id,
+        role=receiver.role,
+        type="Message",
+        title=f"New message about {property.title}",
+        message=f"{current_user.full_name}: {data.message[:140]}",
+        to="/messages",
+    )
+
     return message

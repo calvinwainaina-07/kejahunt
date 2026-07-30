@@ -1,45 +1,53 @@
-"""Dependencies shared by endpoints that require an authenticated user."""
-
+import os
 from typing import Annotated
-
-from fastapi import Cookie, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
-# Integration point: your database teammate should expose this function.
 from app.database import get_db
 from app.models.user import User
-from app.auth.utils import TokenValidationError, decode_access_token
+from app.auth.utils import decode_access_token, TokenValidationError
 
-
-COOKIE_NAME = "access_token"
-bearer_scheme = HTTPBearer(auto_error=False)
+COOKIE_NAME = os.getenv("JWT_COOKIE_NAME", "access_token")
 
 
 def get_current_user(
-    db: Annotated[Session, Depends(get_db)],
-    access_token: Annotated[str | None, Cookie()] = None,
-    bearer_credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)] = None,
+    request: Request,
+    db: Session = Depends(get_db),
 ) -> User:
-    # Return the signed-in user from an HTTP-only cookie or Bearer token.
-    token = access_token or (bearer_credentials.credentials if bearer_credentials else None)
-    credentials_error = HTTPException(
+    credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Authentication is required",
-        headers={"WWW-Authenticate": "Bearer"},
+        detail="Could not validate credentials",
     )
-    if not token:
-        raise credentials_error
+
+    token = request.cookies.get(COOKIE_NAME)
+    if token is None:
+        raise credentials_exception
 
     try:
         user_id = decode_access_token(token)
     except TokenValidationError:
-        raise credentials_error
+        raise credentials_exception
 
-    user = db.get(User, user_id)
+    user = db.query(User).filter(User.id == user_id).first()
     if user is None:
-        raise credentials_error
+        raise credentials_exception
     return user
 
 
+def require_role(*allowed_roles: str):
+    """
+    Dependency factory for endpoints that should only be hit by one role,
+    e.g. Depends(require_role("owner")).
+    """
+    def _check(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(status_code=403, detail="Not permitted for this role")
+        return current_user
+    return _check
+
+
+# Shared aliases so every router can do `current_user: CurrentUser` and
+# `db: DatabaseSession` instead of repeating Depends(...) everywhere - same
+# pattern already used for CurrentUser in the auth router.
 CurrentUser = Annotated[User, Depends(get_current_user)]
+DatabaseSession = Annotated[Session, Depends(get_db)]
