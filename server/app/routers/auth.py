@@ -81,6 +81,7 @@ def login(data: LoginRequest, response: Response, db: DatabaseSession) -> AuthRe
 def logout(response: Response) -> Response:
     """Clear the browser authentication cookie."""
     response.delete_cookie(key=COOKIE_NAME, path="/")
+    response.status_code = status.HTTP_204_NO_CONTENT
     return response
 
 
