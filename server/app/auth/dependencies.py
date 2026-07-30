@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 # Integration point: your database teammate should expose this function.
 from app.database import get_db
-from app.auth.models import User
+from app.models.user import User
 from app.auth.utils import TokenValidationError, decode_access_token
 
 

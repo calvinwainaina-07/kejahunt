@@ -1,0 +1,31 @@
+"""Shared schemas for the application's user resource."""
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+class UserCreate(BaseModel):
+    """Validated fields required to create a user account."""
+
+    full_name: str = Field(min_length=2, max_length=100)
+    email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+    role: str = Field(pattern="^(hunter|owner)$")
+
+    @field_validator("email")
+    @classmethod
+    def normalise_email(cls, value: str) -> str:
+        email = value.strip().lower()
+        if "@" not in email or email.startswith("@") or email.endswith("@"):
+            raise ValueError("Enter a valid email address")
+        return email
+
+
+class UserResponse(BaseModel):
+    """Public user data; the password is deliberately excluded."""
+
+    id: int
+    full_name: str
+    email: str
+    role: str
+
+    model_config = ConfigDict(from_attributes=True)

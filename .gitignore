@@ -152,6 +152,7 @@ activemq-data/
 .envrc
 .venv
 .kejahunt
+node_modules
 env/
 venv/
 ENV/
