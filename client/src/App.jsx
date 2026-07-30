@@ -1,6 +1,7 @@
 // Central route map for every screen in the KejaHunt application.
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
+import Home from "./pages/home.jsx";
 import Login from "./pages/login.jsx";
 import SignUp from "./pages/signup.jsx";
 import ForgotPassword from "./pages/forgotpassword.jsx";
@@ -15,7 +16,6 @@ import PropertyDetails from "./pages/propertydetails.jsx";
 import Bookings from "./pages/bookings.jsx";
 import Notifications from "./pages/notifications.jsx";
 import RoommateProfile from "./pages/roommateprofile.jsx";
-import Home from "./pages/home.jsx";
 
 export default function App() {
   // All page-level navigation is declared here to keep URLs in one central place.
@@ -41,6 +41,7 @@ export default function App() {
         {/* Dynamic route: id identifies the listing selected by the user. */}
         <Route path="/property/:id" element={<PropertyDetails />} />
 
+        {/* Start visitors on the public landing page. */}
         <Route path="/" element={<Home />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
