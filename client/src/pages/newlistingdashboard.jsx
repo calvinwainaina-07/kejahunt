@@ -12,6 +12,7 @@ export default function NewListingDashboard() {
   const listing = properties.find((property) => property.id === Number(id));
   const isEditing = Boolean(listing);
   const [images, setImages] = useState(listing?.images || []);
+  const [imageUrl, setImageUrl] = useState("");
   const [imageError, setImageError] = useState("");
 
   async function addImages(event) {
@@ -36,6 +37,23 @@ export default function NewListingDashboard() {
   function removeImage(indexToRemove) {
     setImages((currentImages) => currentImages.filter((_, index) => index !== indexToRemove));
     setImageError("");
+  }
+
+  function addImageUrl() {
+    if (images.length >= 5) {
+      setImageError("You can add up to five photos per listing.");
+      return;
+    }
+
+    try {
+      const url = new URL(imageUrl.trim());
+      if (!/^https?:$/.test(url.protocol)) throw new Error("Unsupported protocol");
+      setImages((currentImages) => [...currentImages, url.href]);
+      setImageUrl("");
+      setImageError("");
+    } catch {
+      setImageError("Enter a valid image URL that starts with http:// or https://.");
+    }
   }
 
   function handleSubmit(event) {
@@ -122,6 +140,11 @@ export default function NewListingDashboard() {
                 </div>
                 <p className="mt-1 text-sm text-textSecondary">Add clear photos of the exterior, rooms, and amenities.</p>
                 <input id="property-images" type="file" accept="image/*" multiple onChange={addImages} className="mt-3 block w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-primaryLight file:px-3 file:py-2 file:font-semibold file:text-primary hover:file:bg-primaryLight/70" />
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                  <label className="sr-only" htmlFor="property-image-url">Image URL</label>
+                  <input id="property-image-url" type="url" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addImageUrl(); } }} placeholder="Or paste an image URL, e.g. https://example.com/home.jpg" className="min-w-0 flex-1 rounded-lg border border-border px-3.5 py-3 text-sm outline-none focus:border-primary" />
+                  <button type="button" onClick={addImageUrl} className="rounded-lg border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-primaryLight">Add URL</button>
+                </div>
                 {imageError && <p className="mt-2 text-sm text-red-600">{imageError}</p>}
                 {images.length > 0 && (
                   <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
