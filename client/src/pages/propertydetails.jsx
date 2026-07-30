@@ -23,9 +23,18 @@ export default function PropertyDetails() {
         {/* Main property information is paired with a quick owner contact panel. */}
         <div className="mt-5 grid max-w-6xl gap-6 lg:grid-cols-[1.55fr_0.85fr]">
           <section className="overflow-hidden rounded-2xl border border-border bg-surface">
-            <div className="flex h-72 items-center justify-center bg-primaryLight text-sm font-medium text-primary sm:h-96">
-              Property photo coming soon
+            <div className="flex h-72 items-center justify-center bg-primaryLight sm:h-96">
+              {property.images?.[0] ? (
+                <img src={property.images[0]} alt={property.title} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-sm font-medium text-primary">Property photo coming soon</span>
+              )}
             </div>
+            {property.images?.length > 1 && (
+              <div className="grid grid-cols-4 gap-2 p-3">
+                {property.images.slice(1).map((image, index) => <img key={image} src={image} alt={`${property.title} ${index + 2}`} className="aspect-[4/3] w-full rounded-md object-cover" />)}
+              </div>
+            )}
             <div className="p-6 sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
