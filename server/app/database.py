@@ -55,6 +55,15 @@ def apply_sqlite_migrations() -> None:
             "status": "VARCHAR(32) NOT NULL DEFAULT 'Pending'",
             "created_at": "DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00'",
         },
+        "notifications": {
+            "role": "VARCHAR NOT NULL DEFAULT 'hunter'",
+            "type": "VARCHAR NOT NULL DEFAULT 'Listing'",
+            "title": "VARCHAR NOT NULL DEFAULT ''",
+            "message": "VARCHAR NOT NULL DEFAULT ''",
+            "to": "VARCHAR",
+            "read": "BOOLEAN NOT NULL DEFAULT 0",
+            "created_at": "DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00'",
+        },
     }
     with engine.begin() as connection:
         for table, additions in additions_by_table.items():

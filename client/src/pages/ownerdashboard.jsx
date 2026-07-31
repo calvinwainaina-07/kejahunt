@@ -25,12 +25,17 @@ export default function OwnerDashboard() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [propertiesData, notificationData] = await Promise.all([
+        const [propertiesResult, notificationResult] = await Promise.allSettled([
           apiRequest("/properties"),
           apiRequest("/notifications/unread-count"),
         ]);
-        setListings((propertiesData || []).map(normalizeProperty));
-        setUnreadNotifications(Number(notificationData?.unread || 0));
+        if (propertiesResult.status === "rejected") throw propertiesResult.reason;
+        setListings((propertiesResult.value || []).map(normalizeProperty));
+        setUnreadNotifications(
+          notificationResult.status === "fulfilled"
+            ? Number(notificationResult.value?.unread || 0)
+            : 0,
+        );
         setError("");
       } catch (requestError) {
         setError(requestError.message);

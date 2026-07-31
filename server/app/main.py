@@ -12,8 +12,8 @@ from app.database import Base, apply_sqlite_migrations, engine
 from app.models import *  # noqa: F403 - imports all SQLAlchemy models before create_all
 from app.routers import auth, properties, roommate_profile, saved_listings, messages, profiles, notification, roommates, viewings
 
-Base.metadata.create_all(bind=engine)
 apply_sqlite_migrations()
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="KejaHunt API",
