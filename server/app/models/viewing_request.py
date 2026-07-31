@@ -18,7 +18,7 @@ class ViewingRequest(Base):
     status = Column(String(32), default="Pending", nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
-    property = relationship("Property")
+    listing = relationship("Property")
     hunter = relationship("User", foreign_keys=[hunter_id])
 
     @property
