@@ -7,7 +7,7 @@ const COLLECTION_PATHS = new Set([
   "/viewings",
 ]);
 
-function getErrorMessage(detail) {
+function getErrorMessage(detail, status) {
   if (typeof detail === "string") return detail;
 
   // FastAPI validation failures return an array of objects. Convert those
@@ -24,7 +24,7 @@ function getErrorMessage(detail) {
     if (messages.length) return messages.join(". ");
   }
 
-  return "Something went wrong. Please try again.";
+  return `The server could not complete this request (HTTP ${status}). Please try again.`;
 }
 
 export async function apiRequest(path, options = {}) {
@@ -47,7 +47,7 @@ export async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(getErrorMessage(body.detail));
+    throw new Error(getErrorMessage(body.detail || body.message || body.error, response.status));
   }
 
   if (response.status === 204) return null;

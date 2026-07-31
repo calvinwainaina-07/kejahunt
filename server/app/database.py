@@ -37,25 +37,30 @@ def apply_sqlite_migrations() -> None:
         return
 
     inspector = inspect(engine)
-    if not inspector.has_table("roommate_profiles"):
-        return
-
-    existing_columns = {column["name"] for column in inspector.get_columns("roommate_profiles")}
-    additions = {
-        "age": "INTEGER",
-        "traits": "VARCHAR(255) NOT NULL DEFAULT ''",
-        "match_percentage": "INTEGER NOT NULL DEFAULT 0",
+    additions_by_table = {
+        "roommate_profiles": {
+            "age": "INTEGER",
+            "traits": "VARCHAR(255) NOT NULL DEFAULT ''",
+            "match_percentage": "INTEGER NOT NULL DEFAULT 0",
+        },
+        "users": {
+            "phone": "VARCHAR(32) NOT NULL DEFAULT ''",
+            "location": "VARCHAR(100) NOT NULL DEFAULT ''",
+        },
+        "messages": {
+            "sent_at": "DATETIME",
+        },
+        "viewing_requests": {
+            "note": "TEXT NOT NULL DEFAULT ''",
+            "status": "VARCHAR(32) NOT NULL DEFAULT 'Pending'",
+            "created_at": "DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00'",
+        },
     }
     with engine.begin() as connection:
-        for name, definition in additions.items():
-            if name not in existing_columns:
-                connection.execute(text(f"ALTER TABLE roommate_profiles ADD COLUMN {name} {definition}"))
-
-        if inspector.has_table("users"):
-            user_columns = {column["name"] for column in inspector.get_columns("users")}
-            for name, definition in {
-                "phone": "VARCHAR(32) NOT NULL DEFAULT ''",
-                "location": "VARCHAR(100) NOT NULL DEFAULT ''",
-            }.items():
-                if name not in user_columns:
-                    connection.execute(text(f"ALTER TABLE users ADD COLUMN {name} {definition}"))
+        for table, additions in additions_by_table.items():
+            if not inspector.has_table(table):
+                continue
+            existing_columns = {column["name"] for column in inspector.get_columns(table)}
+            for name, definition in additions.items():
+                if name not in existing_columns:
+                    connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {definition}"))
