@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -13,6 +15,7 @@ class MessageResponse(BaseModel):
     receiver_id: int
     property_id: int
     message: str
+    sent_at: datetime
 
     class Config:
         from_attributes = True

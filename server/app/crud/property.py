@@ -1,10 +1,18 @@
 from sqlalchemy.orm import Session
 
 from app.models.property import Property
-from app.schemas.property import PropertyCreate
+from app.schemas.property import PropertyCreate, PropertyUpdate
 
 
-def create_property(db: Session, property_data: PropertyCreate, owner_id: int):
+def create_property(
+    db: Session,
+    property_data: PropertyCreate,
+    owner_id: int
+):
+    """
+    Create a new property listing.
+    """
+
     new_property = Property(
         owner_id=owner_id,
         title=property_data.title,
@@ -26,18 +34,67 @@ def create_property(db: Session, property_data: PropertyCreate, owner_id: int):
 
 
 def get_all_properties(db: Session):
+    """
+    Retrieve all property listings.
+    """
+
     return db.query(Property).all()
 
 
-def get_property(db: Session, property_id: int):
-    return db.query(Property).filter(Property.id == property_id).first()
+def get_property(
+    db: Session,
+    property_id: int
+):
+    """
+    Retrieve a single property by its ID.
+    """
+
+    return (
+        db.query(Property)
+        .filter(Property.id == property_id)
+        .first()
+    )
 
 
-def delete_property(db: Session, property_id: int):
+def update_property(
+    db: Session,
+    property_id: int,
+    property_data: PropertyUpdate
+):
+    """
+    Update an existing property.
+    """
+
     property = get_property(db, property_id)
 
-    if property:
-        db.delete(property)
-        db.commit()
+    if property is None:
+        return None
+
+    update_data = property_data.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(property, key, value)
+
+    db.commit()
+    db.refresh(property)
+
+    return property
+
+
+def delete_property(
+    db: Session,
+    property_id: int
+):
+    """
+    Delete a property.
+    """
+
+    property = get_property(db, property_id)
+
+    if property is None:
+        return None
+
+    db.delete(property)
+    db.commit()
 
     return property
