@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
@@ -16,3 +17,42 @@ class RoommateProfileResponse(RoommateProfileCreate):
     user_id: int
 
     model_config = ConfigDict(from_attributes=True)
+=======
+from pydantic import BaseModel
+
+
+class RoommateProfileCreate(BaseModel):
+    age: int
+    budget: float
+    preferred_location: str
+    occupation: str
+    lifestyle: str
+    traits: str
+    bio: str
+
+
+class RoommateProfileUpdate(BaseModel):
+    age: int
+    budget: float
+    preferred_location: str
+    occupation: str
+    lifestyle: str
+    traits: str
+    bio: str
+
+
+class RoommateProfileResponse(BaseModel):
+    id: int
+    user_id: int
+    age: int
+    budget: float
+    preferred_location: str
+    occupation: str
+    lifestyle: str
+    traits: str
+    bio: str
+    match_percentage: int
+
+    class Config:
+        from_attributes = True
+>>>>>>> 93e38e1c3070dce93159be8e7b4048b851d47602

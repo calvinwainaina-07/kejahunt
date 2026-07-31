@@ -8,7 +8,14 @@ class RoommateProfile(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        unique=True,
+        nullable=False
+    )
+
+    age = Column(Integer)
 
     budget = Column(Float)
 
@@ -18,7 +25,11 @@ class RoommateProfile(Base):
 
     lifestyle = Column(String(100))
 
+    traits = Column(String(255))
+
     bio = Column(Text)
+
+    match_percentage = Column(Integer, default=0)
 
     user = relationship(
         "User",
