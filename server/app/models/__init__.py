@@ -5,3 +5,6 @@ from .property import Property
 from .roommate_profile import RoommateProfile
 from .saved_listing import SavedListing
 from .message import Message
+from .notifications import Notification
+from .roommate_connection import RoommateConnection
+from .viewing_request import ViewingRequest

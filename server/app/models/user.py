@@ -46,3 +46,8 @@ class User(Base):
         foreign_keys="Message.receiver_id",
         back_populates="receiver"
     )
+    notifications = relationship(
+        "Notification",
+        back_populates="user",
+        cascade="all, delete-orphan"
+        )

@@ -42,3 +42,7 @@ class Property(Base):
         "Message",
         back_populates="property"
     )
+
+    @property
+    def owner_user_id(self):
+        return self.owner.user_id if self.owner else None

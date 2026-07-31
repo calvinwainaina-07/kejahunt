@@ -1,31 +1,37 @@
-// TEMPORARY PROTOTYPE AUTH: submit this form to the backend instead of localStorage when the API is ready.
 // Registration page that routes a new user to their selected role's workspace.
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { apiRequest } from "../api";
 
 export default function SignUp() {
   // Store the role choice until an authentication backend replaces this prototype flow.
   const [selectedRole, setSelectedRole] = useState("hunter");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  function createAccount(event) {
-    // Browser validation runs first; persist the role before routing the user.
+  async function createAccount(event) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    // Persist form values locally until the project is connected to an API.
-    localStorage.setItem(
-      "kejahunt-profile",
-      JSON.stringify({
-        fullName: formData.get("fullName"),
-        email: formData.get("email"),
-        phone: formData.get("phone"),
-        location: "",
-        // This demo has no backend yet, so credentials only exist in browser storage.
-        password: formData.get("password"),
-      }),
-    );
-    sessionStorage.setItem("kejahunt-role", selectedRole);
-    navigate(selectedRole === "owner" ? "/owner" : "/dashboard");
+    setError("");
+    setIsSubmitting(true);
+    try {
+      const result = await apiRequest("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          full_name: formData.get("fullName"),
+          email: formData.get("email"),
+          password: formData.get("password"),
+          role: selectedRole,
+        }),
+      });
+      sessionStorage.setItem("kejahunt-role", result.user.role);
+      navigate(result.user.role === "owner" ? "/owner" : "/dashboard");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -55,6 +61,8 @@ export default function SignUp() {
           <Field label="FULL NAME">
             <input required name="fullName" type="text" placeholder="Your name" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
           </Field>
+
+          {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
           <Field label="EMAIL ADDRESS">
             <input required name="email" type="email" placeholder="you@gmail.com" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
           </Field>
@@ -64,8 +72,8 @@ export default function SignUp() {
           <Field label="PASSWORD">
             <input required minLength="6" name="password" type="password" placeholder="At least 6 characters" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
           </Field>
-          <button type="submit" className="rounded-full bg-accent py-4 font-semibold text-white">
-            Create free account
+          <button type="submit" disabled={isSubmitting} className="rounded-full bg-accent py-4 font-semibold text-white disabled:opacity-60">
+            {isSubmitting ? "Creating account..." : "Create free account"}
           </button>
         </form>
 

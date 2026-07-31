@@ -1,10 +1,18 @@
 from sqlalchemy.orm import Session
 
 from app.models.property import Property
-from app.schemas.property import PropertyCreate
+from app.schemas.property import PropertyCreate, PropertyUpdate
 
 
-def create_property(db: Session, property_data: PropertyCreate, owner_id: int):
+def create_property(
+    db: Session,
+    property_data: PropertyCreate,
+    owner_id: int
+):
+    """
+    Create a new property listing.
+    """
+
     new_property = Property(
         owner_id=owner_id,
         title=property_data.title,
@@ -25,19 +33,86 @@ def create_property(db: Session, property_data: PropertyCreate, owner_id: int):
     return new_property
 
 
-def get_all_properties(db: Session):
-    return db.query(Property).all()
+def get_all_properties(
+    db: Session,
+    location: str | None = None,
+    max_rent: float | None = None,
+    house_type: str | None = None,
+    bedrooms: int | None = None,
+    available: bool | None = None,
+):
+    """
+    Retrieve all property listings.
+    """
+
+    query = db.query(Property)
+    if location:
+        query = query.filter(Property.location.ilike(f"%{location}%"))
+    if max_rent is not None:
+        query = query.filter(Property.rent <= max_rent)
+    if house_type:
+        query = query.filter(Property.house_type == house_type)
+    if bedrooms is not None:
+        query = query.filter(Property.bedrooms >= bedrooms)
+    if available is not None:
+        query = query.filter(Property.available == available)
+    return query.all()
 
 
-def get_property(db: Session, property_id: int):
-    return db.query(Property).filter(Property.id == property_id).first()
+def get_property(
+    db: Session,
+    property_id: int
+):
+    """
+    Retrieve a single property by its ID.
+    """
+
+    return (
+        db.query(Property)
+        .filter(Property.id == property_id)
+        .first()
+    )
 
 
-def delete_property(db: Session, property_id: int):
+def update_property(
+    db: Session,
+    property_id: int,
+    property_data: PropertyUpdate
+):
+    """
+    Update an existing property.
+    """
+
     property = get_property(db, property_id)
 
-    if property:
-        db.delete(property)
-        db.commit()
+    if property is None:
+        return None
+
+    update_data = property_data.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(property, key, value)
+
+    db.commit()
+    db.refresh(property)
+
+    return property
+
+
+def delete_property(
+    db: Session,
+    property_id: int
+):
+    """
+    Delete a property.
+    """
+
+    property = get_property(db, property_id)
+
+    if property is None:
+        return None
+
+    db.delete(property)
+    db.commit()
 
     return property

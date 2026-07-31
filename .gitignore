@@ -60,6 +60,7 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+kejahunt.db
 
 # Flask stuff:
 instance/
@@ -151,6 +152,9 @@ activemq-data/
 .env
 .envrc
 .venv
+.kejahunt
+node_modules
+node_modules
 env/
 venv/
 ENV/

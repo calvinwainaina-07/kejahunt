@@ -1,53 +1,37 @@
-// TEMPORARY PROTOTYPE STORAGE: replace browser persistence with authenticated real-time messages.
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
-import { properties } from "../data/mockData.js";
-import { addNotification, readConversations, saveConversations } from "../data/Storage.js";
-
-function getHunterName() {
-  try { return JSON.parse(localStorage.getItem("kejahunt-profile") || "{}").fullName || "You"; } catch { return "You"; }
-}
+import { apiRequest } from "../api";
 
 export default function Messaging() {
-  const role = sessionStorage.getItem("kejahunt-role") || "hunter";
   const [searchParams] = useSearchParams();
   const requestedPropertyId = Number(searchParams.get("property"));
-  const [messageThreads, setMessageThreads] = useState(readConversations);
-  const [activeConversationId, setActiveConversationId] = useState(null);
-  const [draftMessage, setDraftMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [user, setUser] = useState(null);
+  const [draft, setDraft] = useState("");
+  const [error, setError] = useState("");
 
-  // Starting from a listing creates or opens that listing's owner conversation.
-  useEffect(() => {
-    if (role !== "hunter" || !requestedPropertyId) return;
-    const property = properties.find((item) => item.id === requestedPropertyId);
-    if (!property) return;
-    setMessageThreads((current) => {
-      const existing = current.find((thread) => thread.propertyId === property.id && thread.hunter === getHunterName());
-      if (existing) { setActiveConversationId(existing.id); return current; }
-      const newThread = { id: Date.now(), owner: property.owner, hunter: getHunterName(), propertyId: property.id, preview: "Start a conversation about this property.", messages: [] };
-      const updated = [newThread, ...current];
-      saveConversations(updated);
-      setActiveConversationId(newThread.id);
-      return updated;
-    });
-  }, [requestedPropertyId, role]);
+  async function load() {
+    try {
+      const [messageData, propertyData, account] = await Promise.all([apiRequest("/messages"), apiRequest("/properties"), apiRequest("/auth/user")]);
+      setMessages(messageData || []); setProperties(propertyData || []); setUser(account.user);
+    } catch (requestError) { setError(requestError.message); }
+  }
+  useEffect(() => { load(); }, []);
+  const selectedProperty = useMemo(() => properties.find((property) => property.id === requestedPropertyId) || properties[0], [properties, requestedPropertyId]);
+  const visibleMessages = selectedProperty ? messages.filter((message) => message.property_id === selectedProperty.id) : [];
 
-  const visibleThreads = role === "owner" ? messageThreads : messageThreads.filter((thread) => thread.hunter === "You" || thread.hunter === getHunterName());
-  const active = visibleThreads.find((thread) => thread.id === activeConversationId) || visibleThreads[0];
-
-  function selectConversation(id) { setActiveConversationId(id); }
-
-  function sendMessage(event) {
+  async function sendMessage(event) {
     event.preventDefault();
-    const messageText = draftMessage.trim();
-    if (!messageText || !active) return;
-    const updated = messageThreads.map((thread) => thread.id === active.id ? { ...thread, preview: messageText, messages: [...thread.messages, { text: messageText, sender: role }] } : thread);
-    setMessageThreads(updated);
-    saveConversations(updated);
-    addNotification({ type: "Message", audience: role === "owner" ? "hunter" : "owner", title: role === "owner" ? "New reply from a property owner" : "New message from a house hunter", message: `${role === "owner" ? active.owner : active.hunter}: ${messageText}`, to: "/messages" });
-    setDraftMessage("");
+    if (!draft.trim() || !selectedProperty || !user) return;
+    const receiverId = user.role === "owner" ? visibleMessages.find((message) => message.sender_id !== user.id)?.sender_id : selectedProperty.owner_user_id;
+    if (!receiverId) { setError("Open this conversation after the other participant has sent a message."); return; }
+    try {
+      await apiRequest("/messages", { method: "POST", body: JSON.stringify({ receiver_id: receiverId, property_id: selectedProperty.id, message: draft.trim() }) });
+      setDraft(""); await load();
+    } catch (requestError) { setError(requestError.message); }
   }
 
-  return <div className="flex min-h-screen bg-bg"><Sidebar role={role} /><main className="flex-1 px-6 py-8 sm:px-12 sm:py-10"><div className="flex h-[calc(100vh-4rem)] overflow-hidden rounded-2xl border border-border bg-surface"><div className="w-[340px] shrink-0 overflow-y-auto border-r border-border/20 pt-5"><h1 className="px-5 pb-3 text-xl font-bold">Messages</h1>{visibleThreads.map((thread) => <button key={thread.id} type="button" onClick={() => selectConversation(thread.id)} className={`w-full px-5 py-3.5 text-left transition-colors ${thread.id === active?.id ? "bg-primaryLight" : "hover:bg-bg"}`}><p className="text-sm font-semibold text-textPrimary">{role === "owner" ? thread.hunter : thread.owner}</p><p className="mt-0.5 text-xs text-textSecondary">{properties.find((property) => property.id === thread.propertyId)?.title}</p><p className="mt-1 truncate text-xs text-textSecondary">{thread.preview}</p></button>)}{!visibleThreads.length && <p className="px-5 py-10 text-center text-sm text-textSecondary">No conversations yet.</p>}</div><div className="flex flex-1 flex-col bg-bg">{active ? <><div className="border-b border-border/20 bg-surface px-6 py-4"><p className="text-sm font-semibold">{role === "owner" ? active.hunter : active.owner}</p><p className="mt-0.5 text-xs text-textSecondary">{properties.find((property) => property.id === active.propertyId)?.title}</p></div><div className="flex flex-1 flex-col gap-3.5 overflow-y-auto p-6">{active.messages.length === 0 && <p className="m-auto text-sm text-textSecondary">Start the conversation by sending a message.</p>}{active.messages.map((message, index) => <div key={index} className={`flex ${message.sender === role ? "justify-end" : "justify-start"}`}><div className={`max-w-xs rounded-2xl px-4 py-2.5 text-sm ${message.sender === role ? "bg-accent text-white" : "border border-border/20 bg-surface"}`}>{message.text}</div></div>)}</div><form onSubmit={sendMessage} className="flex items-center gap-3 bg-surface px-6 py-4"><input value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} placeholder="Type a message..." className="flex-1 rounded-lg border border-border/30 px-3.5 py-2.5 text-sm outline-none" /><button type="submit" disabled={!draftMessage.trim()} className="rounded-lg bg-accent px-4.5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">Send</button></form></> : <p className="m-auto text-sm text-textSecondary">Select a conversation to start messaging.</p>}</div></div></main></div>;
+  return <div className="flex min-h-screen bg-bg"><Sidebar role={user?.role} /><main className="flex-1 px-6 py-8 sm:px-12 sm:py-10"><h1 className="text-2xl font-bold text-textPrimary">Messages</h1>{error && <p className="mt-3 text-sm text-red-600">{error}</p>}<div className="mt-6 grid max-w-5xl gap-5 lg:grid-cols-[280px_1fr]"><aside className="rounded-2xl border border-border bg-surface p-4"><p className="mb-3 text-sm font-semibold">Property conversations</p>{properties.map((property) => <a key={property.id} href={`#/messages?property=${property.id}`} className={`mb-2 block rounded-lg px-3 py-2 text-sm ${selectedProperty?.id === property.id ? "bg-primaryLight text-primary" : "text-textSecondary hover:bg-bg"}`}>{property.title}</a>)}</aside><section className="flex min-h-[440px] flex-col rounded-2xl border border-border bg-surface"><div className="border-b border-border/30 p-5"><h2 className="font-bold text-textPrimary">{selectedProperty?.title || "Select a property"}</h2></div><div className="flex-1 space-y-3 p-5">{visibleMessages.length ? visibleMessages.map((message) => <div key={message.id} className={`flex ${message.sender_id === user?.id ? "justify-end" : "justify-start"}`}><p className={`max-w-md rounded-2xl px-4 py-2.5 text-sm ${message.sender_id === user?.id ? "bg-accent text-white" : "bg-primaryLight text-textPrimary"}`}>{message.message}</p></div>) : <p className="text-sm text-textSecondary">Start the conversation about this property.</p>}</div><form onSubmit={sendMessage} className="flex gap-3 border-t border-border/30 p-4"><input value={draft} onChange={(event) => setDraft(event.target.value)} className="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm" placeholder="Type a message..." /><button className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white">Send</button></form></section></div></main></div>;
 }

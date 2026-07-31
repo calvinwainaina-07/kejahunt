@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict
 
 
 class MessageCreate(BaseModel):
@@ -13,6 +15,6 @@ class MessageResponse(BaseModel):
     receiver_id: int
     property_id: int
     message: str
+    sent_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
