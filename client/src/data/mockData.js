@@ -1,9 +1,30 @@
 // TEMPORARY PROTOTYPE DATA: replace these arrays with backend API responses during integration.
 export const properties = [
   // Listing fields match the data displayed on cards, search filters, and owner tools.
-  { id: 1, title: "Modern Apartment", location: "Kilimani, Nairobi", type: "Apartment", rent: 35000, status: "Active", bedrooms: 2, bathrooms: 2, size: "85 sqm", description: "A bright, modern home close to shops and transport.", owner: "Amina Wanjiku" },
-  { id: 2, title: "Cozy Studio", location: "Ruaka, Nairobi", type: "Studio", rent: 22000, status: "Active", bedrooms: 1, bathrooms: 1, size: "42 sqm", description: "A comfortable studio in a secure compound.", owner: "David Kimani" },
-  { id: 3, title: "Two Bedroom Home", location: "Westlands, Nairobi", type: "House", rent: 65000, status: "Draft", bedrooms: 2, bathrooms: 2, size: "120 sqm", description: "A spacious home with plenty of natural light.", owner: "Grace Njeri" },
+  {
+    id: 1, title: "Modern Apartment", location: "Kilimani, Nairobi", type: "Apartment", rent: 35000, status: "Active", bedrooms: 2, bathrooms: 2, size: "85 sqm", description: "A bright, modern home close to shops and transport.", owner: "Amina Wanjiku",
+    images: [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=85",
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85",
+    ],
+  },
+  {
+    id: 2, title: "Cozy Studio", location: "Ruaka, Nairobi", type: "Studio", rent: 22000, status: "Active", bedrooms: 1, bathrooms: 1, size: "42 sqm", description: "A comfortable studio in a secure compound.", owner: "David Kimani",
+    images: [
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1400&q=85",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=85",
+    ],
+  },
+  {
+    id: 3, title: "Two Bedroom Home", location: "Westlands, Nairobi", type: "House", rent: 65000, status: "Draft", bedrooms: 2, bathrooms: 2, size: "120 sqm", description: "A spacious home with plenty of natural light.", owner: "Grace Njeri",
+    images: [
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1400&q=85",
+      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1600585152915-d208bec867a1?auto=format&fit=crop&w=900&q=85",
+    ],
+  },
 ];
 
 export const roommates = [

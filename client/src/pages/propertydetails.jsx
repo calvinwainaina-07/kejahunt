@@ -15,7 +15,7 @@ function normalizeProperty(item) {
     description: item.description || "",
     bedrooms: item.bedrooms || 0,
     bathrooms: item.bathrooms || 0,
-    images: item.image_url ? [item.image_url] : [],
+    images: item.images?.length ? item.images : item.image_url ? [item.image_url] : [],
   };
 }
 
@@ -25,10 +25,12 @@ export default function PropertyDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
     async function loadProperty() {
       try {
+        setSelectedImage(0);
         const data = await apiRequest(`/properties/${id}`);
         setProperty(normalizeProperty(data));
         setError("");
@@ -72,15 +74,26 @@ export default function PropertyDetails() {
         <div className="mt-5 grid max-w-6xl gap-6 lg:grid-cols-[1.55fr_0.85fr]">
           <section className="overflow-hidden rounded-2xl border border-border bg-surface">
             <div className="flex h-72 items-center justify-center bg-primaryLight sm:h-96">
-              {property.images?.[0] ? (
-                <img src={property.images[0]} alt={property.title} className="h-full w-full object-cover" />
+              {property.images?.[selectedImage] ? (
+                <img src={property.images[selectedImage]} alt={`${property.title} photo ${selectedImage + 1}`} className="h-full w-full object-cover" />
               ) : (
                 <span className="text-sm font-medium text-primary">Property photo coming soon</span>
               )}
             </div>
             {property.images?.length > 1 && (
               <div className="grid grid-cols-4 gap-2 p-3">
-                {property.images.slice(1).map((image, index) => <img key={image} src={image} alt={`${property.title} ${index + 2}`} className="aspect-[4/3] w-full rounded-md object-cover" />)}
+                {property.images.map((image, index) => (
+                  <button
+                    key={image}
+                    type="button"
+                    onClick={() => setSelectedImage(index)}
+                    className={`aspect-[4/3] overflow-hidden rounded-md outline-none ring-offset-2 transition focus-visible:ring-2 focus-visible:ring-primary ${selectedImage === index ? "ring-2 ring-primary" : "opacity-75 hover:opacity-100"}`}
+                    aria-label={`View photo ${index + 1} of ${property.title}`}
+                    aria-pressed={selectedImage === index}
+                  >
+                    <img src={image} alt={`Thumbnail ${index + 1} of ${property.title}`} className="h-full w-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
             <div className="p-6 sm:p-8">
