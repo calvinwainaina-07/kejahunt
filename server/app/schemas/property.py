@@ -1,10 +1,9 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class PropertyCreate(BaseModel):
-    owner_id: int
     title: str
     description: str
     location: str
@@ -12,8 +11,8 @@ class PropertyCreate(BaseModel):
     house_type: str
     bedrooms: int
     bathrooms: int
-    amenities: str
-    image_url: str
+    amenities: str = ""
+    image_url: str = ""
 
 
 class PropertyUpdate(BaseModel):
@@ -31,7 +30,8 @@ class PropertyUpdate(BaseModel):
 
 class PropertyResponse(PropertyCreate):
     id: int
+    owner_id: int
+    owner_user_id: int | None = None
     available: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

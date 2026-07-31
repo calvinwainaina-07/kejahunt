@@ -1,37 +1,23 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class RoommateProfileCreate(BaseModel):
-    age: int
+    age: int | None = None
     budget: float
     preferred_location: str
-    occupation: str
+    occupation: str = ""
     lifestyle: str
-    traits: str
+    traits: str = ""
     bio: str
 
 
-class RoommateProfileUpdate(BaseModel):
-    age: int
-    budget: float
-    preferred_location: str
-    occupation: str
-    lifestyle: str
-    traits: str
-    bio: str
+class RoommateProfileUpdate(RoommateProfileCreate):
+    pass
 
 
-class RoommateProfileResponse(BaseModel):
+class RoommateProfileResponse(RoommateProfileCreate):
     id: int
     user_id: int
-    age: int
-    budget: float
-    preferred_location: str
-    occupation: str
-    lifestyle: str
-    traits: str
-    bio: str
-    match_percentage: int
+    match_percentage: int = 0
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

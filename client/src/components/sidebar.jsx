@@ -1,6 +1,7 @@
 // TEMPORARY PROTOTYPE AUTH: the role currently comes from sessionStorage; use backend session data later.
 // Shared dashboard navigation; NavLink applies the active-route style.
 import { NavLink, useNavigate } from "react-router-dom";
+import { apiRequest } from "../api";
 
 // Links are shown or hidden according to the signed-in user's role.
 const links = [
@@ -48,7 +49,8 @@ export default function Sidebar({ showOwnerDashboard = true, role }) {
       {/* Clearing the session role makes the next visit start with a new role choice. */}
       <button
         type="button"
-        onClick={() => {
+        onClick={async () => {
+          try { await apiRequest("/auth/logout", { method: "POST" }); } catch { /* Always clear this browser's UI session. */ }
           sessionStorage.removeItem("kejahunt-role");
           navigate("/login");
         }}

@@ -1,29 +1,14 @@
 // TEMPORARY PROTOTYPE DATA: replace local roommate profiles, alerts, and connections with backend APIs.
 // Roommate profiles, matching scores, and connection requests for the prototype.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
-import { roommates } from "../data/mockData";
+import { apiRequest } from "../api";
 
-const profileStorageKey = "kejahunt-roommate-profile";
 // Traits are shared by the account form and the candidate matching logic.
 
-function readRoommateProfile() {
-  try {
-    const savedProfile = JSON.parse(localStorage.getItem(profileStorageKey) || "null");
-    // Profiles created before traits were added should still render safely.
-    return savedProfile
-      ? {
-          ...savedProfile,
-          location: savedProfile.location || "Not specified",
-          contact: savedProfile.contact || "Not specified",
-          email: savedProfile.email || "Not specified",
-          traits: Array.isArray(savedProfile.traits) ? savedProfile.traits : [],
-        }
-      : null;
-  } catch {
-    return null;
-  }
+function normalizeProfile(profile) {
+  return { ...profile, name: profile.user?.full_name || "KejaHunt user", location: profile.preferred_location, about: profile.bio, tags: profile.traits ? profile.traits.split(",").filter(Boolean) : [], contact: {} };
 }
 
 function calculateMatch(roommate, profile) {
@@ -44,22 +29,40 @@ function calculateMatch(roommate, profile) {
 export default function RoommateMatching() {
   // Local state controls account editing, alerts, card actions, and the profile viewer.
   const [connectedRoommateIds, setConnectedRoommateIds] = useState([]);
-  const [roommateProfile] = useState(readRoommateProfile);
+  const [roommates, setRoommates] = useState([]);
+  const [roommateProfile, setRoommateProfile] = useState(null);
   const [accountAlert, setAccountAlert] = useState("");
   const [selectedRoommate, setSelectedRoommate] = useState(null);
   const [connectedContact, setConnectedContact] = useState(null);
   const hasRoommateAccount = Boolean(roommateProfile);
 
-  function connectWithRoommate(roommate) {
+  useEffect(() => {
+    async function loadProfiles() {
+      try {
+        const [profiles, myProfile] = await Promise.all([
+          apiRequest("/roommates"),
+          apiRequest("/roommates/me").catch((error) => error.message === "Roommate profile not found" ? null : Promise.reject(error)),
+        ]);
+        setRoommates((profiles || []).map(normalizeProfile).filter((profile) => profile.id !== myProfile?.id));
+        setRoommateProfile(myProfile ? normalizeProfile(myProfile) : null);
+      } catch (error) { setAccountAlert(error.message); }
+    }
+    loadProfiles();
+  }, []);
+
+  async function connectWithRoommate(roommate) {
     // A user must complete their own profile before requesting a connection.
     if (!hasRoommateAccount) {
       setAccountAlert("Create your roommate profile first to start connecting with potential roommates.");
       return;
     }
 
-    setConnectedRoommateIds((currentIds) => [...currentIds, roommate.id]);
-    setAccountAlert(`${roommate.name} has been notified that you want to connect.`);
-    setConnectedContact(roommate);
+    try {
+      await apiRequest(`/roommates/${roommate.id}/connect`, { method: "POST" });
+      setConnectedRoommateIds((currentIds) => [...currentIds, roommate.id]);
+      setAccountAlert(`${roommate.name} has been notified that you want to connect.`);
+      setConnectedContact(roommate);
+    } catch (error) { setAccountAlert(error.message); }
   }
 
   function showRoommateProfile(roommate) {

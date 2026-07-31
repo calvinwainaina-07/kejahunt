@@ -1,15 +1,64 @@
-// TEMPORARY PROTOTYPE DATA: replace the property lookup with a listing-details API request.
 // Full listing page opened when a house hunter selects a property card.
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
-import { properties } from "../data/mockData";
+import { apiRequest } from "../api";
+
+function normalizeProperty(item) {
+  return {
+    ...item,
+    id: item.id,
+    title: item.title,
+    rent: Number(item.rent || 0),
+    type: item.house_type || item.type || "Apartment",
+    location: item.location || "Nairobi",
+    description: item.description || "",
+    bedrooms: item.bedrooms || 0,
+    bathrooms: item.bathrooms || 0,
+    images: item.image_url ? [item.image_url] : [],
+  };
+}
 
 export default function PropertyDetails() {
-  // The URL id determines which shared listing data to display.
   const { id } = useParams();
-  const property = properties.find((listing) => listing.id === Number(id));
+  const [property, setProperty] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  // Keep an invalid listing URL from rendering an empty details page.
+  useEffect(() => {
+    async function loadProperty() {
+      try {
+        const data = await apiRequest(`/properties/${id}`);
+        setProperty(normalizeProperty(data));
+        setError("");
+      } catch (requestError) {
+        setError(requestError.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProperty();
+  }, [id]);
+
+  async function saveListing() {
+    if (!property) return;
+    setSaving(true);
+    try {
+      await apiRequest(`/saved-listings/${property.id}`, {
+        method: "POST",
+      });
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <div className="flex min-h-screen bg-bg"><Sidebar /><main className="flex-1 px-6 py-8 sm:px-12 sm:py-10"><p className="text-sm text-textSecondary">Loading listing...</p></main></div>;
+  if (error && !property) return <Navigate to="/dashboard" replace />;
   if (!property) return <Navigate to="/dashboard" replace />;
 
   return (
@@ -20,7 +69,6 @@ export default function PropertyDetails() {
           ← Back to homes
         </Link>
 
-        {/* Main property information is paired with a quick owner contact panel. */}
         <div className="mt-5 grid max-w-6xl gap-6 lg:grid-cols-[1.55fr_0.85fr]">
           <section className="overflow-hidden rounded-2xl border border-border bg-surface">
             <div className="flex h-72 items-center justify-center bg-primaryLight sm:h-96">
@@ -48,7 +96,7 @@ export default function PropertyDetails() {
               <div className="mt-7 grid grid-cols-3 gap-3 border-y border-border/30 py-5 text-center">
                 <Detail label="Bedrooms" value={property.bedrooms} />
                 <Detail label="Bathrooms" value={property.bathrooms} />
-                <Detail label="Size" value={property.size} />
+                <Detail label="Size" value="N/A" />
               </div>
 
               <section className="mt-7">
@@ -62,19 +110,23 @@ export default function PropertyDetails() {
             <p className="text-xs font-semibold tracking-wide text-textSecondary">LISTED BY</p>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                {property.owner.charAt(0)}
+                O
               </div>
               <div>
-                <p className="font-semibold text-textPrimary">{property.owner}</p>
-                <p className="text-sm text-textSecondary">Property owner</p>
+                <p className="font-semibold text-textPrimary">Property owner</p>
+                <p className="text-sm text-textSecondary">Owner contact available through messages</p>
               </div>
             </div>
-            <Link to={`/messages?property=${property.id}`} className="mt-6 block rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-white hover:bg-accent/90">
+            <button type="button" onClick={saveListing} disabled={saving} className="mt-6 block w-full rounded-lg border border-primary px-5 py-3 text-center text-sm font-semibold text-primary hover:bg-primaryLight disabled:opacity-60">
+              {saving ? "Saving..." : "Save listing"}
+            </button>
+            <Link to={`/messages?property=${property.id}`} className="mt-3 block rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-white hover:bg-accent/90">
               Contact owner
             </Link>
             <Link to={`/bookings?property=${property.id}`} className="mt-3 block rounded-lg border border-primary px-5 py-3 text-center text-sm font-semibold text-primary hover:bg-primaryLight">
               Request a viewing
             </Link>
+            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
           </aside>
         </div>
       </main>
@@ -83,7 +135,6 @@ export default function PropertyDetails() {
 }
 
 function Detail({ label, value }) {
-  // Small reusable statistic used for bedrooms, bathrooms, and floor size.
   return (
     <div>
       <p className="text-lg font-bold text-textPrimary">{value}</p>

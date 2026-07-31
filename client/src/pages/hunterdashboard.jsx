@@ -1,11 +1,9 @@
-// TEMPORARY PROTOTYPE DATA: replace the imported property fixtures with API-fetched listings.
 // House-hunter dashboard containing search controls and property cards.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../components/sidebar.jsx";
 import PropertyCard from "../components/propertycard.jsx";
 import { Link } from "react-router-dom";
-import { properties } from "../data/mockData";
-import { readNotificationsForRole, readViewingRequests } from "../data/Storage.js";
+import { apiRequest } from "../api";
 
 // Each option supplies the price check used by the selected rent filter.
 const rentRanges = {
@@ -15,22 +13,51 @@ const rentRanges = {
   over50000: (rent) => rent > 50000,
 };
 
+function normalizeProperty(item) {
+  return {
+    ...item,
+    id: item.id,
+    title: item.title,
+    rent: Number(item.rent || 0),
+    type: item.house_type || item.type || "Apartment",
+    location: item.location || "Nairobi",
+    description: item.description || "",
+    bedrooms: item.bedrooms || 0,
+    bathrooms: item.bathrooms || 0,
+    images: item.image_url ? [item.image_url] : [],
+  };
+}
+
 export default function HunterDashboard() {
-  // Keep edits separate from active filters until the user submits the search form.
+  const [properties, setProperties] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [rentRange, setRentRange] = useState("any");
   const [propertyType, setPropertyType] = useState("any");
   const [activeFilters, setActiveFilters] = useState({ searchText: "", rentRange: "any", propertyType: "any" });
-  const unreadNotifications = readNotificationsForRole("hunter").filter((notification) => !notification.read).length;
-  const pendingViewings = readViewingRequests().filter((request) => request.hunter === "You" && request.status === "Pending").length;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadProperties() {
+      try {
+        const data = await apiRequest("/properties");
+        setProperties((data || []).map(normalizeProperty));
+        setError("");
+      } catch (requestError) {
+        setError(requestError.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProperties();
+  }, []);
 
   function handleSearch(event) {
-    // Prevent a page reload and commit all current filter controls at once.
     event.preventDefault();
     setActiveFilters({ searchText, rentRange, propertyType });
   }
 
-  // Recalculate visible property cards from the last submitted search criteria.
   const filteredProperties = properties.filter((property) => {
     const searchTarget = `${property.title} ${property.location || ""} ${property.type}`.toLowerCase();
     const matchesSearch = searchTarget.includes(activeFilters.searchText.trim().toLowerCase());
@@ -50,16 +77,15 @@ export default function HunterDashboard() {
           <p className="mt-1 text-sm text-textSecondary">Search and compare available homes that match your needs.</p>
         </div>
 
-        {/* Dashboard shortcuts keep viewing requests and account activity easy to find after sign-in. */}
         <section className="grid gap-4 sm:grid-cols-2">
           <Link to="/bookings" className="rounded-2xl border border-border bg-surface p-5 transition-shadow hover:shadow-md">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold tracking-wide text-textSecondary">VIEWING REQUESTS</p>
                 <h2 className="mt-2 text-lg font-bold text-textPrimary">Manage your appointments</h2>
-                <p className="mt-1 text-sm text-textSecondary">{pendingViewings ? `${pendingViewings} request awaiting an owner response.` : "Request and track property viewings."}</p>
+                <p className="mt-1 text-sm text-textSecondary">Request and track property viewings.</p>
               </div>
-              <span className="rounded-full bg-primaryLight px-3 py-1 text-sm font-bold text-primary">{pendingViewings}</span>
+              <span className="rounded-full bg-primaryLight px-3 py-1 text-sm font-bold text-primary">0</span>
             </div>
             <p className="mt-4 text-sm font-semibold text-accent">Open viewing requests →</p>
           </Link>
@@ -70,13 +96,12 @@ export default function HunterDashboard() {
                 <h2 className="mt-2 text-lg font-bold text-textPrimary">Keep up with your activity</h2>
                 <p className="mt-1 text-sm text-textSecondary">Viewing decisions, messages, listing updates, and roommate requests.</p>
               </div>
-              <span className="rounded-full bg-accent px-3 py-1 text-sm font-bold text-white">{unreadNotifications}</span>
+              <span className="rounded-full bg-accent px-3 py-1 text-sm font-bold text-white">0</span>
             </div>
             <p className="mt-4 text-sm font-semibold text-accent">Open notifications →</p>
           </Link>
         </section>
 
-        {/* Filters only apply when the user submits, avoiding unnecessary list updates. */}
         <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-3 bg-surface border border-border rounded-xl px-4 py-3.5">
           <input
             value={searchText}
@@ -102,17 +127,17 @@ export default function HunterDashboard() {
           </button>
         </form>
 
+        {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
         <p className="text-sm text-textSecondary font-medium">
-          {filteredProperties.length} homes available in Nairobi
+          {loading ? "Loading homes..." : `${filteredProperties.length} homes available in Nairobi`}
         </p>
 
-        {/* Each card navigates to a property-specific details page. */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((p) => (
             <PropertyCard key={p.id} property={p} />
           ))}
         </div>
-        {filteredProperties.length === 0 && (
+        {!loading && filteredProperties.length === 0 && (
           <p className="rounded-xl border border-dashed border-border bg-surface px-5 py-10 text-center text-sm text-textSecondary">
             No homes match those search filters. Try a different search or filter.
           </p>

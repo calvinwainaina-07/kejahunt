@@ -1,8 +1,4 @@
-from pydantic import BaseModel
-
-
-class SavedListingCreate(BaseModel):
-    property_id: int
+from pydantic import BaseModel, ConfigDict
 
 
 class SavedListingResponse(BaseModel):
@@ -10,5 +6,4 @@ class SavedListingResponse(BaseModel):
     user_id: int
     property_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
