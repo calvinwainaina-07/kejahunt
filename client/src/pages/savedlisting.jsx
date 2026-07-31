@@ -34,9 +34,15 @@ export default function SavedListings() {
               key={p.id}
               className="flex items-center gap-5 bg-surface border border-border rounded-xl px-5 py-4"
             >
-              <div className="w-20 h-15 bg-primaryLight rounded-lg shrink-0" />
+              <Link to={`/property/${p.id}`} className="h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-primaryLight">
+                {p.images?.[0] ? (
+                  <img src={p.images[0]} alt={p.title} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full items-center justify-center px-2 text-center text-xs font-medium text-primary">Photo coming soon</span>
+                )}
+              </Link>
               <div className="flex-1">
-                <p className="font-semibold text-textPrimary">{p.title}</p>
+                <Link to={`/property/${p.id}`} className="font-semibold text-textPrimary hover:text-primary">{p.title}</Link>
                 <p className="text-xs text-textSecondary">{p.type}</p>
               </div>
               <p className="text-accent font-bold text-sm whitespace-nowrap">
