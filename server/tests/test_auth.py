@@ -7,7 +7,7 @@ from pathlib import Path
 # These values must be set before importing the application and its database.
 test_directory = Path(tempfile.mkdtemp(prefix="kejahunt-auth-tests-"))
 os.environ["DATABASE_URL"] = f"sqlite:///{test_directory / 'test.db'}"
-os.environ["JWT_SECRET"] = "test-secret-not-for-production"
+os.environ["JWT_SECRET"] = "test-secret-not-for-production-32-bytes"
 
 from fastapi.testclient import TestClient
 
@@ -95,5 +95,5 @@ def test_only_an_authenticated_owner_can_create_a_listing():
     assert response.status_code == 201
 
     response = client.post("/properties/", json=listing)
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json()["title"] == "Quiet studio"

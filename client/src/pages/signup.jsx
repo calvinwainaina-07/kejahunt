@@ -23,6 +23,7 @@ export default function SignUp() {
           email: formData.get("email"),
           password: formData.get("password"),
           role: selectedRole,
+          phone: formData.get("phone"),
         }),
       });
       sessionStorage.setItem("kejahunt-role", result.user.role);
@@ -70,7 +71,7 @@ export default function SignUp() {
             <input required name="phone" type="tel" placeholder="e.g. +254 700 000 000" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
           </Field>
           <Field label="PASSWORD">
-            <input required minLength="6" name="password" type="password" placeholder="At least 6 characters" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
+            <input required minLength="8" name="password" type="password" placeholder="At least 8 characters" className="w-full bg-transparent text-sm outline-none placeholder:text-textSecondary/70" />
           </Field>
           <button type="submit" disabled={isSubmitting} className="rounded-full bg-accent py-4 font-semibold text-white disabled:opacity-60">
             {isSubmitting ? "Creating account..." : "Create free account"}

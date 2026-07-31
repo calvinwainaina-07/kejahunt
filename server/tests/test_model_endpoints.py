@@ -5,7 +5,7 @@ from pathlib import Path
 
 test_directory = Path(tempfile.mkdtemp(prefix="kejahunt-model-tests-"))
 os.environ["DATABASE_URL"] = f"sqlite:///{test_directory / 'test.db'}"
-os.environ["JWT_SECRET"] = "test-secret-not-for-production"
+os.environ["JWT_SECRET"] = "test-secret-not-for-production-32-bytes"
 
 from fastapi.testclient import TestClient
 
@@ -35,7 +35,7 @@ def test_roommate_profile_endpoints():
     register_user(client, "hunter@example.com", "hunter")
 
     response = client.post(
-        "/roommate-profiles/",
+        "/roommates/",
         json={
             "budget": 20000,
             "preferred_location": "Nairobi",
@@ -44,10 +44,10 @@ def test_roommate_profile_endpoints():
             "bio": "Looking for a calm roommate",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json()["preferred_location"] == "Nairobi"
 
-    me_response = client.get("/roommate-profiles/me")
+    me_response = client.get("/roommates/me")
     assert me_response.status_code == 200
     assert me_response.json()["occupation"] == "Engineer"
 
@@ -69,7 +69,7 @@ def test_saved_listing_endpoints():
     }
 
     property_response = client.post("/properties/", json=listing)
-    assert property_response.status_code == 200
+    assert property_response.status_code == 201
     property_id = property_response.json()["id"]
 
     register_user(client, "saver@example.com", "hunter")
@@ -87,7 +87,7 @@ def test_saved_listing_endpoints():
 def test_message_endpoints():
     client = make_client()
     register_user(client, "sender@example.com", "hunter")
-    register_user(client, "receiver@example.com", "owner")
+    receiver = register_user(client, "receiver@example.com", "owner")
 
     listing = {
         "title": "Shared house",
@@ -101,18 +101,24 @@ def test_message_endpoints():
         "image_url": "https://example.com/house.jpg",
     }
     property_response = client.post("/properties/", json=listing)
-    assert property_response.status_code == 200
+    assert property_response.status_code == 201
     property_id = property_response.json()["id"]
+
+    login_response = client.post(
+        "/auth/login",
+        json={"email": "sender@example.com", "password": "secure-password-123"},
+    )
+    assert login_response.status_code == 200
 
     message_response = client.post(
         "/messages/",
         json={
-            "receiver_id": 2,
+            "receiver_id": receiver.json()["user"]["id"],
             "property_id": property_id,
             "message": "Is the house still available?",
         },
     )
-    assert message_response.status_code == 200
+    assert message_response.status_code == 201
 
     list_response = client.get("/messages/")
     assert list_response.status_code == 200

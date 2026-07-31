@@ -48,6 +48,7 @@ def register(data: RegisterRequest, response: Response, db: DatabaseSession) -> 
         email=data.email,
         password=hash_password(data.password),
         role=data.role,
+        phone=data.phone.strip(),
     )
     db.add(user)
     try:

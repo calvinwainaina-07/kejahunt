@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import UTC, datetime
 from app.database import Base
 
 
@@ -17,7 +17,7 @@ class Message(Base):
 
     message = Column(Text, nullable=False)
 
-    sent_at = Column(DateTime, default=datetime.utcnow)
+    sent_at = Column(DateTime, default=lambda: datetime.now(UTC))
 
     sender = relationship(
         "User",

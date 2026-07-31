@@ -13,9 +13,14 @@ KejaHunt is a full-stack house-listing platform for property owners and house hu
 Start the API from the `server` directory:
 
 ```bash
-python -m pip install -r requirements.txt
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+cp .env.example .env
+.venv/bin/uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
+
+The `.env.example` file contains a development JWT secret. Replace it with a
+unique secret before deploying the API.
 
 In a second terminal, start the frontend:
 

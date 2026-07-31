@@ -11,6 +11,8 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     role = Column(String(20), nullable=False)
+    phone = Column(String(32), nullable=False, default="")
+    location = Column(String(100), nullable=False, default="")
 
     property_owner = relationship(
         "PropertyOwner",

@@ -1,4 +1,5 @@
-from datetime import datetime
+from builtins import property as builtin_property
+from datetime import UTC, datetime
 
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -16,11 +17,11 @@ class ViewingRequest(Base):
     requested_time = Column(String(10), nullable=False)
     note = Column(Text, default="", nullable=False)
     status = Column(String(32), default="Pending", nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
     property = relationship("Property")
     hunter = relationship("User", foreign_keys=[hunter_id])
 
-    @property
+    @builtin_property
     def hunter_name(self):
         return self.hunter.full_name if self.hunter else "House hunter"

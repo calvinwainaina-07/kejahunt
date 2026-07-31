@@ -1,13 +1,19 @@
 import os
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine
+# Load local configuration before importing modules that read environment values
+# during initialization (notably the database connection).
+load_dotenv()
+
+from app.database import Base, apply_sqlite_migrations, engine
 from app.models import *  # noqa: F403 - imports all SQLAlchemy models before create_all
 from app.routers import auth, properties, roommate_profile, saved_listings, messages, profiles, notification, roommates, viewings
 
 Base.metadata.create_all(bind=engine)
+apply_sqlite_migrations()
 
 app = FastAPI(
     title="KejaHunt API",

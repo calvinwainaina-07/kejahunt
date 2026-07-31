@@ -9,24 +9,26 @@ from app.models.house_hunter import HouseHunter
 from app.models.property_owner import PropertyOwner
 from app.models.user import User
 from app.auth.utils import hash_password, verify_password
-from app.schemas.user import PasswordUpdate, UserResponse, UserUpdate
+from app.schemas.user import PasswordUpdate, UserProfileResponse, UserResponse, UserUpdate
 
 router = APIRouter(tags=["Profiles"])
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-@router.get("/users/me", response_model=UserResponse)
+@router.get("/users/me", response_model=UserProfileResponse)
 def read_current_user_profile(current_user: CurrentUser):
     return current_user
 
 
-@router.put("/users/me", response_model=UserResponse)
+@router.put("/users/me", response_model=UserProfileResponse)
 def update_current_user_profile(payload: UserUpdate, current_user: CurrentUser, db: Session = Depends(get_db)):
     duplicate = db.query(User).filter(User.email == payload.email.strip().lower(), User.id != current_user.id).first()
     if duplicate:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="An account with this email already exists")
     current_user.full_name = payload.full_name.strip()
     current_user.email = payload.email.strip().lower()
+    current_user.phone = payload.phone.strip()
+    current_user.location = payload.location.strip()
     db.commit()
     db.refresh(current_user)
     return current_user
@@ -42,7 +44,7 @@ def update_current_user_password(payload: PasswordUpdate, current_user: CurrentU
 
 
 @router.get("/users/", response_model=list[UserResponse])
-def list_users(db: Session = Depends(get_db)):
+def list_users(current_user: CurrentUser, db: Session = Depends(get_db)):
     return db.query(User).all()
 
 

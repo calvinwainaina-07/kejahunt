@@ -16,6 +16,11 @@ import PropertyDetails from "./pages/propertydetails.jsx";
 import Bookings from "./pages/bookings.jsx";
 import Notifications from "./pages/notifications.jsx";
 import RoommateProfile from "./pages/roommateprofile.jsx";
+import ProtectedRoute from "./components/protectedroute.jsx";
+
+function protectedPage(page, roles) {
+  return <ProtectedRoute roles={roles}>{page}</ProtectedRoute>;
+}
 
 export default function App() {
   // All page-level navigation is declared here to keep URLs in one central place.
@@ -27,19 +32,19 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/dashboard" element={<HunterDashboard />} />
-        <Route path="/saved" element={<SavedListings />} />
-        <Route path="/roommates" element={<RoommateMatching />} />
-        <Route path="/roommate-profile" element={<RoommateProfile />} />
-        <Route path="/owner" element={<OwnerDashboard />} />
-        <Route path="/owner/new-listing" element={<NewListingDashboard />} />
-        <Route path="/owner/edit/:id" element={<NewListingDashboard />} />
-        <Route path="/messages" element={<Messaging />} />
-        <Route path="/bookings" element={<Bookings />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/dashboard" element={protectedPage(<HunterDashboard />, ["hunter"])} />
+        <Route path="/saved" element={protectedPage(<SavedListings />, ["hunter"])} />
+        <Route path="/roommates" element={protectedPage(<RoommateMatching />, ["hunter"])} />
+        <Route path="/roommate-profile" element={protectedPage(<RoommateProfile />, ["hunter"])} />
+        <Route path="/owner" element={protectedPage(<OwnerDashboard />, ["owner"])} />
+        <Route path="/owner/new-listing" element={protectedPage(<NewListingDashboard />, ["owner"])} />
+        <Route path="/owner/edit/:id" element={protectedPage(<NewListingDashboard />, ["owner"])} />
+        <Route path="/messages" element={protectedPage(<Messaging />)} />
+        <Route path="/bookings" element={protectedPage(<Bookings />)} />
+        <Route path="/notifications" element={protectedPage(<Notifications />)} />
+        <Route path="/profile" element={protectedPage(<Profile />)} />
         {/* Dynamic route: id identifies the listing selected by the user. */}
-        <Route path="/property/:id" element={<PropertyDetails />} />
+        <Route path="/property/:id" element={protectedPage(<PropertyDetails />)} />
 
         {/* Start visitors on the public landing page. */}
         <Route path="/" element={<Home />} />

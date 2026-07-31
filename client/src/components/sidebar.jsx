@@ -22,6 +22,7 @@ export default function Sidebar({ showOwnerDashboard = true, role }) {
   // Owners do not need saved listings, while hunters do not see owner management.
   const visibleLinks = links.filter((link) => {
     if ((!showOwnerDashboard || activeRole === "hunter") && link.to === "/owner") return false;
+    if (activeRole === "owner" && link.to === "/dashboard") return false;
     if (activeRole === "owner" && ["/saved", "/roommates"].includes(link.to)) return false;
     return true;
   });

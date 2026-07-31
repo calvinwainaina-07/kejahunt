@@ -17,7 +17,7 @@ export default function Profile() {
   const role = sessionStorage.getItem("kejahunt-role") || "hunter";
 
   useEffect(() => {
-    apiRequest("/users/me").then((user) => setProfile((current) => ({ ...current, fullName: user.full_name, email: user.email }))).catch((error) => setSavedMessage(error.message));
+    apiRequest("/users/me").then((user) => setProfile({ fullName: user.full_name, email: user.email, phone: user.phone || "", location: user.location || "" })).catch((error) => setSavedMessage(error.message));
   }, []);
 
   function updateProfileField(event) {
@@ -29,8 +29,8 @@ export default function Profile() {
   async function saveProfile(event) {
     event.preventDefault();
     try {
-      const user = await apiRequest("/users/me", { method: "PUT", body: JSON.stringify({ full_name: profile.fullName, email: profile.email }) });
-      setProfile((current) => ({ ...current, fullName: user.full_name, email: user.email }));
+      const user = await apiRequest("/users/me", { method: "PUT", body: JSON.stringify({ full_name: profile.fullName, email: profile.email, phone: profile.phone, location: profile.location }) });
+      setProfile({ fullName: user.full_name, email: user.email, phone: user.phone || "", location: user.location || "" });
       setSavedMessage("Profile details saved.");
     } catch (error) { setSavedMessage(error.message); }
   }
@@ -122,10 +122,10 @@ export default function Profile() {
                   <input required name="currentPassword" type="password" className="w-full rounded-lg border border-border/40 px-3 py-2.5 outline-none focus:border-primary" />
                 </Field>
                 <Field label="NEW PASSWORD">
-                  <input required minLength="6" name="newPassword" type="password" className="w-full rounded-lg border border-border/40 px-3 py-2.5 outline-none focus:border-primary" />
+                  <input required minLength="8" name="newPassword" type="password" className="w-full rounded-lg border border-border/40 px-3 py-2.5 outline-none focus:border-primary" />
                 </Field>
                 <Field label="CONFIRM NEW PASSWORD">
-                  <input required minLength="6" name="confirmPassword" type="password" className="w-full rounded-lg border border-border/40 px-3 py-2.5 outline-none focus:border-primary" />
+                  <input required minLength="8" name="confirmPassword" type="password" className="w-full rounded-lg border border-border/40 px-3 py-2.5 outline-none focus:border-primary" />
                 </Field>
               </div>
               {passwordMessage && <p className={`mt-4 text-sm font-medium ${passwordMessage.includes("incorrect") || passwordMessage.includes("do not match") ? "text-accent" : "text-success"}`}>{passwordMessage}</p>}

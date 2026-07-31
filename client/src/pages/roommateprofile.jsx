@@ -15,7 +15,7 @@ export default function RoommateProfile() {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const fullName = accountProfile.full_name || "KejaHunt user";
-  const phone = "";
+  const phone = accountProfile.phone || "";
   const email = accountProfile.email || "";
 
   useEffect(() => {
