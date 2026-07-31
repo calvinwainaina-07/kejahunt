@@ -33,12 +33,30 @@ def create_property(
     return new_property
 
 
-def get_all_properties(db: Session):
+def get_all_properties(
+    db: Session,
+    location: str | None = None,
+    max_rent: float | None = None,
+    house_type: str | None = None,
+    bedrooms: int | None = None,
+    available: bool | None = None,
+):
     """
     Retrieve all property listings.
     """
 
-    return db.query(Property).all()
+    query = db.query(Property)
+    if location:
+        query = query.filter(Property.location.ilike(f"%{location}%"))
+    if max_rent is not None:
+        query = query.filter(Property.rent <= max_rent)
+    if house_type:
+        query = query.filter(Property.house_type == house_type)
+    if bedrooms is not None:
+        query = query.filter(Property.bedrooms >= bedrooms)
+    if available is not None:
+        query = query.filter(Property.available == available)
+    return query.all()
 
 
 def get_property(

@@ -89,7 +89,6 @@ export default function NewListingDashboard() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const payload = {
-      owner_id: 1,
       title: formData.get("title"),
       description: formData.get("description"),
       location: formData.get("location") || "Nairobi",

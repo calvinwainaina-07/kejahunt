@@ -46,9 +46,8 @@ export default function PropertyDetails() {
     if (!property) return;
     setSaving(true);
     try {
-      await apiRequest("/saved-listings/", {
+      await apiRequest(`/saved-listings/${property.id}`, {
         method: "POST",
-        body: JSON.stringify({ property_id: property.id }),
       });
       setError("");
     } catch (requestError) {

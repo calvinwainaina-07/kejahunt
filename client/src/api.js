@@ -15,5 +15,7 @@ export async function apiRequest(path, options = {}) {
     throw new Error(body.detail || "Something went wrong. Please try again.");
   }
 
-  return response.status === 204 ? null : response.json();
+  if (response.status === 204) return null;
+  const body = await response.text();
+  return body ? JSON.parse(body) : null;
 }

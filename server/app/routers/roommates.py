@@ -10,7 +10,7 @@ from app.models.roommate_connection import RoommateConnection
 from app.models.user import User
 from app.services.notif_service import create_notification
 
-router = APIRouter(prefix="/roomates", tags=["Roomates"])
+router = APIRouter(prefix="/roommates", tags=["Roommates"])
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 

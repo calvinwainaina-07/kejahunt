@@ -1,29 +1,24 @@
 // TEMPORARY PROTOTYPE STORAGE: replace localStorage profile and password actions with authenticated API requests.
 // Profile workspace for viewing and updating a user's contact details and password.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
+import { apiRequest } from "../api";
 
-const profileStorageKey = "kejahunt-profile";
 const emptyProfile = { fullName: "", email: "", phone: "", location: "" };
-
-function readProfile() {
-  try {
-    // Merge stored values with defaults so older profiles always have every display field.
-    return { ...emptyProfile, ...JSON.parse(localStorage.getItem(profileStorageKey) || "{}") };
-  } catch {
-    return emptyProfile;
-  }
-}
 
 export default function Profile() {
   // Profile state drives both the read-only summary and the editable form.
-  const [profile, setProfile] = useState(readProfile);
+  const [profile, setProfile] = useState(emptyProfile);
   const [savedMessage, setSavedMessage] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const navigate = useNavigate();
   const role = sessionStorage.getItem("kejahunt-role") || "hunter";
+
+  useEffect(() => {
+    apiRequest("/users/me").then((user) => setProfile((current) => ({ ...current, fullName: user.full_name, email: user.email }))).catch((error) => setSavedMessage(error.message));
+  }, []);
 
   function updateProfileField(event) {
     // One handler updates any profile input using its `name` attribute.
@@ -31,42 +26,35 @@ export default function Profile() {
     setProfile((currentProfile) => ({ ...currentProfile, [name]: value }));
   }
 
-  function saveProfile(event) {
-    // Keep profile changes after a page refresh in this browser-only prototype.
+  async function saveProfile(event) {
     event.preventDefault();
-    localStorage.setItem(profileStorageKey, JSON.stringify(profile));
-    setSavedMessage("Profile details saved.");
+    try {
+      const user = await apiRequest("/users/me", { method: "PUT", body: JSON.stringify({ full_name: profile.fullName, email: profile.email }) });
+      setProfile((current) => ({ ...current, fullName: user.full_name, email: user.email }));
+      setSavedMessage("Profile details saved.");
+    } catch (error) { setSavedMessage(error.message); }
   }
 
-  function changePassword(event) {
+  async function changePassword(event) {
     // Validate current and confirmed passwords before replacing the saved value.
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const currentPassword = formData.get("currentPassword");
     const newPassword = formData.get("newPassword");
 
-    if (profile.password && currentPassword !== profile.password) {
-      setPasswordMessage("Your current password is incorrect.");
-      return;
-    }
-
     if (newPassword !== formData.get("confirmPassword")) {
       setPasswordMessage("New passwords do not match.");
       return;
     }
 
-    const updatedProfile = { ...profile, password: newPassword };
-    setProfile(updatedProfile);
-    localStorage.setItem(profileStorageKey, JSON.stringify(updatedProfile));
-    setPasswordMessage("Your password has been updated.");
-    event.currentTarget.reset();
+    try {
+      const result = await apiRequest("/users/me/password", { method: "PUT", body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }) });
+      setPasswordMessage(result.message);
+      event.currentTarget.reset();
+    } catch (error) { setPasswordMessage(error.message); }
   }
 
   function deleteAccount() {
-    // Remove all browser-stored account information, including the roommate profile.
-    localStorage.removeItem(profileStorageKey);
-    localStorage.removeItem("kejahunt-roommate-account");
-    localStorage.removeItem("kejahunt-roommate-profile");
     sessionStorage.removeItem("kejahunt-role");
     navigate("/signup", { replace: true });
   }

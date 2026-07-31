@@ -8,7 +8,8 @@ from app.database import get_db
 from app.models.house_hunter import HouseHunter
 from app.models.property_owner import PropertyOwner
 from app.models.user import User
-from app.schemas.user import UserResponse
+from app.auth.utils import hash_password, verify_password
+from app.schemas.user import PasswordUpdate, UserResponse, UserUpdate
 
 router = APIRouter(tags=["Profiles"])
 CurrentUser = Annotated[User, Depends(get_current_user)]
@@ -17,6 +18,27 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 @router.get("/users/me", response_model=UserResponse)
 def read_current_user_profile(current_user: CurrentUser):
     return current_user
+
+
+@router.put("/users/me", response_model=UserResponse)
+def update_current_user_profile(payload: UserUpdate, current_user: CurrentUser, db: Session = Depends(get_db)):
+    duplicate = db.query(User).filter(User.email == payload.email.strip().lower(), User.id != current_user.id).first()
+    if duplicate:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="An account with this email already exists")
+    current_user.full_name = payload.full_name.strip()
+    current_user.email = payload.email.strip().lower()
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.put("/users/me/password")
+def update_current_user_password(payload: PasswordUpdate, current_user: CurrentUser, db: Session = Depends(get_db)):
+    if not verify_password(payload.current_password, current_user.password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your current password is incorrect")
+    current_user.password = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Your password has been updated"}
 
 
 @router.get("/users/", response_model=list[UserResponse])
