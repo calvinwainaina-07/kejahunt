@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
 from app.models import *  # noqa: F403 - imports all SQLAlchemy models before create_all
-from app.routers import auth, properties, roommate_profile, saved_listings, messages, profiles, notification, roommates
+from app.routers import auth, properties, roommate_profile, saved_listings, messages, profiles, notification, roommates, viewings
 
 Base.metadata.create_all(bind=engine)
 
@@ -35,6 +35,7 @@ app.include_router(messages.router)
 app.include_router(profiles.router)
 app.include_router(notification.router)
 app.include_router(roommates.router)
+app.include_router(viewings.router)
 
 
 @app.get("/")

@@ -50,12 +50,13 @@ The frontend uses `client/src/api.js` as its shared API client. It includes JSON
 | Roommate profile and connections | `/roommates`, `/roommates/me`, `/roommates/{profile_id}/connect` |
 | Messages | `/messages` |
 | Notifications | `/notifications`, `/notifications/unread-count` |
+| Viewing requests | `/viewings` |
 
 Interactive API documentation is available at `http://127.0.0.1:8000/docs` while the backend is running.
 
-## Current limitation
+## Viewing requests
 
-The booking/viewing screen is currently a UI prototype backed by browser state. A persistent viewing-request model and API endpoints have not been added to the backend yet.
+House hunters can request a viewing for an available property. Owners see requests for their own listings and can confirm, decline, or request a new time. Each action is persisted and creates an in-app notification for the other participant.
 
 ## Verification
 
