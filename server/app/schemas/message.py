@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-from pydantic import BaseModel, ConfigDict
-=======
 from datetime import datetime
 
-from pydantic import BaseModel
->>>>>>> 93e38e1c3070dce93159be8e7b4048b851d47602
+from pydantic import BaseModel, ConfigDict
 
 
 class MessageCreate(BaseModel):

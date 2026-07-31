@@ -1,22 +1,31 @@
-// TEMPORARY PROTOTYPE AUTH: replace browser storage with secure backend authentication.
 // Authentication screen and entry point.
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { apiRequest } from "../api";
 
 export default function Login() {
-  // The chosen role decides which dashboard opens after prototype sign-in.
   const [selectedRole, setSelectedRole] = useState("hunter");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  function signIn(event) {
-    // Save the role for sidebar navigation until the user logs out.
+  async function signIn(event) {
     event.preventDefault();
-    // Keep the login email available to the profile page in this browser-only demo.
-    const email = new FormData(event.currentTarget).get("email");
-    const savedProfile = JSON.parse(localStorage.getItem("kejahunt-profile") || "{}");
-    localStorage.setItem("kejahunt-profile", JSON.stringify({ ...savedProfile, email }));
-    sessionStorage.setItem("kejahunt-role", selectedRole);
-    navigate(selectedRole === "owner" ? "/owner" : "/dashboard");
+    const formData = new FormData(event.currentTarget);
+    setError("");
+    setIsSubmitting(true);
+    try {
+      const result = await apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email: formData.get("email"), password: formData.get("password") }),
+      });
+      sessionStorage.setItem("kejahunt-role", result.user.role);
+      navigate(result.user.role === "owner" ? "/owner" : "/dashboard");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -83,11 +92,14 @@ export default function Login() {
           <Field label="PASSWORD">
             <input
               type="password"
+              name="password"
               required
               placeholder="••••••••"
               className="w-full bg-transparent outline-none text-sm placeholder:text-textSecondary/70"
             />
           </Field>
+
+          {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
 
           {/* This becomes a password-reset link once routing is added. */}
           <Link to="/forgot-password" className="self-end text-accent text-sm font-semibold -mt-2">
@@ -96,9 +108,10 @@ export default function Login() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="bg-accent text-white font-semibold py-4 rounded-full flex items-center justify-center gap-2"
           >
-            Sign In
+            {isSubmitting ? "Signing in..." : "Sign In"}
             <span>→</span>
           </button>
         </form>

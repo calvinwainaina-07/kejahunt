@@ -4,18 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
-<<<<<<< HEAD
 from app.models import *  # noqa: F403 - imports all SQLAlchemy models before create_all
-from app.routers import auth, properties, roommate_profiles, saved_listings, messages, profiles, notification, roommates
-=======
-from app.models import *
-
-from app.routers import auth
-from app.routers import properties
-from app.routers import messages
-from app.routers import saved_listing
-from app.routers import roommate_profile
->>>>>>> 93e38e1c3070dce93159be8e7b4048b851d47602
+from app.routers import auth, properties, roommate_profile, saved_listings, messages, profiles, notification, roommates
 
 Base.metadata.create_all(bind=engine)
 
@@ -39,19 +29,13 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(properties.router)
-<<<<<<< HEAD
-app.include_router(roommate_profiles.router)
+app.include_router(roommate_profile.router)
 app.include_router(saved_listings.router)
 app.include_router(messages.router)
 app.include_router(profiles.router)
 app.include_router(notification.router)
 app.include_router(roommates.router)
 
-=======
-app.include_router(messages.router)
-app.include_router(saved_listing.router)
-app.include_router(roommate_profile.router)
->>>>>>> 93e38e1c3070dce93159be8e7b4048b851d47602
 
 @app.get("/")
 def home():
