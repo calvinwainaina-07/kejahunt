@@ -73,6 +73,9 @@ export default function OwnerDashboard() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <Link to="/dashboard" className="border border-primary px-5 py-3 text-sm font-semibold text-primary rounded-lg">
+              Browse Listings
+            </Link>
             <Link to="/owner/new-listing" className="bg-accent text-white text-sm font-semibold px-5 py-3 rounded-lg">
               + New Listing
             </Link>

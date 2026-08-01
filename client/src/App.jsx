@@ -36,7 +36,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/dashboard" element={protectedPage(<HunterDashboard />, ["hunter"])} />
+        <Route path="/dashboard" element={protectedPage(<HunterDashboard />, ["hunter", "owner"])} />
         <Route path="/saved" element={protectedPage(<SavedListings />, ["hunter"])} />
         <Route path="/roommates" element={protectedPage(<RoommateMatching />, ["hunter"])} />
         <Route path="/roommate-profile" element={protectedPage(<RoommateProfile />, ["hunter"])} />
