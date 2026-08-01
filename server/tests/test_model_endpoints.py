@@ -84,6 +84,31 @@ def test_saved_listing_endpoints():
     assert delete_response.status_code == 200
 
 
+def test_owner_can_only_fetch_their_own_listings():
+    client = make_client()
+    first_owner = register_user(client, "first-owner@example.com", "owner")
+    listing = {
+        "title": "First owner apartment",
+        "description": "A spacious two-bedroom apartment.",
+        "location": "Kilimani",
+        "rent": 35000,
+        "house_type": "apartment",
+        "bedrooms": 2,
+        "bathrooms": 2,
+    }
+    assert client.post("/properties/", json=listing).status_code == 201
+
+    register_user(client, "second-owner@example.com", "owner")
+    listing["title"] = "Second owner apartment"
+    assert client.post("/properties/", json=listing).status_code == 201
+
+    response = client.get("/properties/mine")
+
+    assert response.status_code == 200
+    assert [property["title"] for property in response.json()] == ["Second owner apartment"]
+    assert first_owner.json()["user"]["id"] != response.json()[0]["owner_user_id"]
+
+
 def test_message_endpoints():
     client = make_client()
     register_user(client, "sender@example.com", "hunter")

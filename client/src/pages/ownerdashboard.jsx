@@ -26,7 +26,7 @@ export default function OwnerDashboard() {
     async function loadData() {
       try {
         const [propertiesResult, notificationResult] = await Promise.allSettled([
-          apiRequest("/properties"),
+          apiRequest("/properties/mine"),
           apiRequest("/notifications/unread-count"),
         ]);
         if (propertiesResult.status === "rejected") throw propertiesResult.reason;

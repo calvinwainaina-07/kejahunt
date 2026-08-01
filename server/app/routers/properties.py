@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.crud.property import create_property, delete_property, get_all_properties, get_property, update_property
 from app.database import get_db
+from app.models.property import Property
 from app.models.user import User
 from app.schemas.property import PropertyCreate, PropertyResponse, PropertyUpdate
 
@@ -23,6 +24,15 @@ def read_properties(
     db: Session = Depends(get_db),
 ):
     return get_all_properties(db, location, max_rent, house_type, bedrooms, available)
+
+
+@router.get("/mine", response_model=list[PropertyResponse])
+def read_my_properties(current_user: CurrentUser, db: Session = Depends(get_db)):
+    """Return only listings owned by the signed-in property owner."""
+    if current_user.role != "owner" or current_user.property_owner is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only property owners can view their listings")
+
+    return db.query(Property).filter(Property.owner_id == current_user.property_owner.id).all()
 
 
 @router.get("/{property_id}", response_model=PropertyResponse)
