@@ -29,3 +29,16 @@ def send_message(payload: MessageCreate, current_user: CurrentUser, db: Database
     message = create_message(db, payload, current_user.id)
     create_notification(db, user_id=recipient.id, role=recipient.role, type="Message", title="New message", message=payload.message, to="/messages")
     return message
+
+
+@router.delete("/{message_id}")
+def remove_message(message_id: int, current_user: CurrentUser, db: DatabaseSession):
+    """Allow a user to permanently remove a message they sent."""
+    message = db.get(Message, message_id)
+    if message is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
+    if message.sender_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only delete messages you sent")
+    db.delete(message)
+    db.commit()
+    return {"message": "Message deleted successfully"}

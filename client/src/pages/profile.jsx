@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
 import { apiRequest } from "../api";
+import { useAuth } from "../components/useauth.js";
 
 const emptyProfile = { fullName: "", email: "", phone: "", location: "" };
 
@@ -14,6 +15,7 @@ export default function Profile() {
   const [passwordMessage, setPasswordMessage] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const navigate = useNavigate();
+  const { clearSession } = useAuth();
   const role = sessionStorage.getItem("kejahunt-role") || "hunter";
 
   useEffect(() => {
@@ -54,9 +56,15 @@ export default function Profile() {
     } catch (error) { setPasswordMessage(error.message); }
   }
 
-  function deleteAccount() {
-    sessionStorage.removeItem("kejahunt-role");
-    navigate("/signup", { replace: true });
+  async function deleteAccount() {
+    try {
+      await apiRequest("/users/me", { method: "DELETE" });
+      clearSession();
+      navigate("/signup", { replace: true });
+    } catch (error) {
+      setSavedMessage(error.message);
+      setShowDeleteConfirmation(false);
+    }
   }
 
   return (
@@ -163,7 +171,7 @@ function DeleteAccountConfirmation({ onCancel, onConfirm }) {
       <section className="w-full max-w-md rounded-3xl bg-surface p-6 shadow-2xl">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl font-bold text-red-600">!</div>
         <h2 id="delete-profile-title" className="mt-5 text-xl font-bold text-textPrimary">Delete your account?</h2>
-        <p className="mt-2 text-sm leading-6 text-textSecondary">This permanently removes your saved profile information and roommate matching account from this device.</p>
+        <p className="mt-2 text-sm leading-6 text-textSecondary">This permanently removes your account, listings, messages, saved properties, viewing requests, and roommate profile.</p>
         <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button type="button" onClick={onCancel} className="rounded-lg border border-border px-5 py-3 text-sm font-semibold text-textPrimary hover:bg-bg">Keep account</button>
           <button type="button" onClick={onConfirm} className="rounded-lg bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700">Delete account</button>

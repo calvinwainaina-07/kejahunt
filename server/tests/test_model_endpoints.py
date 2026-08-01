@@ -145,9 +145,12 @@ def test_message_endpoints():
     )
     assert message_response.status_code == 201
 
+    delete_response = client.delete(f"/messages/{message_response.json()['id']}")
+    assert delete_response.status_code == 200
+
     list_response = client.get("/messages/")
     assert list_response.status_code == 200
-    assert len(list_response.json()) == 1
+    assert list_response.json() == []
 
 
 def test_owner_can_confirm_a_viewing_request():
@@ -224,3 +227,15 @@ def test_owner_can_delete_a_listing_with_related_records():
     )
     assert response.status_code == 200
     assert client.get(f"/properties/{property_id}").status_code == 404
+
+
+def test_user_can_permanently_delete_their_account():
+    client = make_client()
+    registration = register_user(client, "remove-account@example.com", "hunter")
+    token = registration.json()["access_token"]
+
+    response = client.delete("/users/me", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 204
+
+    session_response = client.get("/auth/user", headers={"Authorization": f"Bearer {token}"})
+    assert session_response.status_code == 401

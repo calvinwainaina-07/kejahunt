@@ -6,8 +6,13 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.database import get_db
 from app.models.house_hunter import HouseHunter
+from app.models.message import Message
 from app.models.property_owner import PropertyOwner
+from app.models.roommate_connection import RoommateConnection
+from app.models.roommate_profile import RoommateProfile
+from app.models.saved_listing import SavedListing
 from app.models.user import User
+from app.models.viewing_request import ViewingRequest
 from app.auth.utils import hash_password, verify_password
 from app.schemas.user import PasswordUpdate, UserProfileResponse, UserResponse, UserUpdate
 
@@ -41,6 +46,30 @@ def update_current_user_password(payload: PasswordUpdate, current_user: CurrentU
     current_user.password = hash_password(payload.new_password)
     db.commit()
     return {"message": "Your password has been updated"}
+
+
+@router.delete("/users/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_current_user(current_user: CurrentUser, db: Session = Depends(get_db)):
+    """Permanently delete the signed-in account and data owned by it."""
+    if current_user.property_owner is not None:
+        # Deleting a listing also removes its messages, saved records, and viewings.
+        for listing in list(current_user.property_owner.properties):
+            db.delete(listing)
+
+    db.query(RoommateConnection).filter(
+        (RoommateConnection.requester_id == current_user.id)
+        | (RoommateConnection.target_id == current_user.id)
+    ).delete(synchronize_session=False)
+    db.query(ViewingRequest).filter(ViewingRequest.hunter_id == current_user.id).delete(synchronize_session=False)
+    db.query(SavedListing).filter(SavedListing.user_id == current_user.id).delete(synchronize_session=False)
+    db.query(Message).filter(
+        (Message.sender_id == current_user.id) | (Message.receiver_id == current_user.id)
+    ).delete(synchronize_session=False)
+    db.query(RoommateProfile).filter(RoommateProfile.user_id == current_user.id).delete(synchronize_session=False)
+    db.query(HouseHunter).filter(HouseHunter.user_id == current_user.id).delete(synchronize_session=False)
+    db.query(PropertyOwner).filter(PropertyOwner.user_id == current_user.id).delete(synchronize_session=False)
+    db.delete(current_user)
+    db.commit()
 
 
 @router.get("/users/", response_model=list[UserResponse])
