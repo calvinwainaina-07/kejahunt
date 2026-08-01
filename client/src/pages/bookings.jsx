@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
 import { apiRequest } from "../api";
+import { useAuth } from "../components/useauth.js";
 
 const times = ["09:00", "10:00", "11:30", "14:00", "15:30", "17:00"];
 
@@ -13,7 +14,7 @@ function isPlaceholderListing(property) {
 export default function Bookings() {
   const [searchParams] = useSearchParams();
   const requestedPropertyId = Number(searchParams.get("property"));
-  const [account, setAccount] = useState(null);
+  const { user: account } = useAuth();
   const [loading, setLoading] = useState(true);
   const [properties, setProperties] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -28,8 +29,7 @@ export default function Bookings() {
     try {
       setLoading(true);
       setError("");
-      const [auth, propertyData, viewingData] = await Promise.all([apiRequest("/auth/user"), apiRequest("/properties?available=true"), apiRequest("/viewings")]);
-      setAccount(auth.user);
+      const [propertyData, viewingData] = await Promise.all([apiRequest("/properties?available=true"), apiRequest("/viewings")]);
       const availableProperties = (propertyData || []).filter((property) => !isPlaceholderListing(property));
       setProperties(availableProperties);
       setRequests(viewingData || []);
@@ -45,7 +45,7 @@ export default function Bookings() {
   }
 
   if (!account) {
-    return <main className="grid min-h-screen place-items-center bg-bg p-6 text-sm text-red-600">{error || "Unable to load your account."}</main>;
+    return <main className="grid min-h-screen place-items-center bg-bg p-6 text-sm text-red-600">Unable to load your account.</main>;
   }
 
   const role = account.role;
