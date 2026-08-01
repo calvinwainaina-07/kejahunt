@@ -17,6 +17,7 @@ import Bookings from "./pages/bookings.jsx";
 import Notifications from "./pages/notifications.jsx";
 import RoommateProfile from "./pages/roommateprofile.jsx";
 import ProtectedRoute from "./components/protectedroute.jsx";
+import ErrorBoundary from "./components/errorboundary.jsx";
 
 function protectedPage(page, roles) {
   return <ProtectedRoute roles={roles}>{page}</ProtectedRoute>;
@@ -27,6 +28,7 @@ export default function App() {
   return (
     // HashRouter keeps each screen reachable when the app is served from VS Code or a static host.
     <HashRouter>
+      <ErrorBoundary>
       <Routes>
         {/* Authentication and core house-hunter routes. */}
         <Route path="/login" element={<Login />} />
@@ -50,6 +52,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </ErrorBoundary>
     </HashRouter>
   );
 }

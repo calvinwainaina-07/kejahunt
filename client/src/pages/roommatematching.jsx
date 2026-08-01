@@ -8,7 +8,17 @@ import { apiRequest } from "../api";
 // Traits are shared by the account form and the candidate matching logic.
 
 function normalizeProfile(profile) {
-  return { ...profile, name: profile.user?.full_name || "KejaHunt user", location: profile.preferred_location, about: profile.bio, tags: profile.traits ? profile.traits.split(",").filter(Boolean) : [], contact: {} };
+  const tags = typeof profile?.traits === "string" ? profile.traits.split(",").map((trait) => trait.trim()).filter(Boolean) : [];
+  return {
+    ...profile,
+    name: typeof profile?.user?.full_name === "string" && profile.user.full_name.trim() ? profile.user.full_name : "KejaHunt user",
+    location: typeof profile?.preferred_location === "string" ? profile.preferred_location : "Location not specified",
+    about: typeof profile?.bio === "string" ? profile.bio : "No introduction provided yet.",
+    budget: Number(profile?.budget) || 0,
+    lifestyle: typeof profile?.lifestyle === "string" ? profile.lifestyle : "Flexible",
+    tags,
+    contact: {},
+  };
 }
 
 function calculateMatch(roommate, profile) {
@@ -16,12 +26,14 @@ function calculateMatch(roommate, profile) {
   if (!profile) return "--";
 
   // Score shared traits most heavily, then budget, lifestyle, and preferred location.
-  const sharedTraits = (profile.traits || []).filter((trait) => roommate.tags.includes(trait)).length;
-  const traitScore = Math.round((sharedTraits / roommate.tags.length) * 25);
+  const profileTraits = Array.isArray(profile.traits) ? profile.traits : [];
+  const roommateTags = Array.isArray(roommate.tags) ? roommate.tags : [];
+  const sharedTraits = profileTraits.filter((trait) => roommateTags.includes(trait)).length;
+  const traitScore = roommateTags.length ? Math.round((sharedTraits / roommateTags.length) * 25) : 0;
   const budgetDifference = Math.abs(Number(profile.budget) - roommate.budget);
   const budgetScore = budgetDifference <= 3000 ? 15 : budgetDifference <= 7000 ? 10 : budgetDifference <= 12000 ? 5 : 0;
   const lifestyleScore = profile.lifestyle === roommate.lifestyle ? 5 : 0;
-  const locationScore = profile.location?.trim().toLowerCase() === roommate.location.toLowerCase() ? 5 : 0;
+  const locationScore = String(profile.location || "").trim().toLowerCase() === String(roommate.location || "").trim().toLowerCase() ? 5 : 0;
 
   return Math.min(100, 50 + traitScore + budgetScore + lifestyleScore + locationScore);
 }
@@ -72,6 +84,7 @@ export default function RoommateMatching() {
 
   function moveProfile(direction) {
     // Wrap around the candidate list for continuous previous/next profile browsing.
+    if (!selectedRoommate || roommates.length === 0) return;
     const currentIndex = roommates.findIndex((roommate) => roommate.id === selectedRoommate.id);
     const nextIndex = (currentIndex + direction + roommates.length) % roommates.length;
     showRoommateProfile(roommates[nextIndex]);
