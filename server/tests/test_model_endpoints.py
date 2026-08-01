@@ -148,3 +148,79 @@ def test_message_endpoints():
     list_response = client.get("/messages/")
     assert list_response.status_code == 200
     assert len(list_response.json()) == 1
+
+
+def test_owner_can_confirm_a_viewing_request():
+    client = make_client()
+    owner = register_user(client, "viewing-owner@example.com", "owner")
+    property_response = client.post(
+        "/properties/",
+        json={
+            "title": "Viewing apartment",
+            "description": "A bright apartment.",
+            "location": "Kilimani",
+            "rent": 30000,
+            "house_type": "apartment",
+            "bedrooms": 2,
+            "bathrooms": 1,
+        },
+    )
+    assert property_response.status_code == 201
+
+    hunter = register_user(client, "viewing-hunter@example.com", "hunter")
+    viewing_response = client.post(
+        "/viewings/",
+        json={
+            "property_id": property_response.json()["id"],
+            "requested_date": "2026-08-10",
+            "requested_time": "10:00",
+        },
+        headers={"Authorization": f"Bearer {hunter.json()['access_token']}"},
+    )
+    assert viewing_response.status_code == 201
+
+    response = client.patch(
+        f"/viewings/{viewing_response.json()['id']}",
+        json={"status": "Confirmed"},
+        headers={"Authorization": f"Bearer {owner.json()['access_token']}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "Confirmed"
+
+
+def test_owner_can_delete_a_listing_with_related_records():
+    client = make_client()
+    owner = register_user(client, "delete-owner@example.com", "owner")
+    property_response = client.post(
+        "/properties/",
+        json={
+            "title": "Deletable apartment",
+            "description": "An apartment to remove.",
+            "location": "Westlands",
+            "rent": 35000,
+            "house_type": "apartment",
+            "bedrooms": 1,
+            "bathrooms": 1,
+        },
+        headers={"Authorization": f"Bearer {owner.json()['access_token']}"},
+    )
+    assert property_response.status_code == 201
+    property_id = property_response.json()["id"]
+
+    hunter = register_user(client, "delete-hunter@example.com", "hunter")
+    assert client.post(
+        f"/saved-listings/{property_id}",
+        headers={"Authorization": f"Bearer {hunter.json()['access_token']}"},
+    ).status_code == 200
+    assert client.post(
+        "/viewings/",
+        json={"property_id": property_id, "requested_date": "2026-08-10", "requested_time": "11:00"},
+        headers={"Authorization": f"Bearer {hunter.json()['access_token']}"},
+    ).status_code == 201
+
+    response = client.delete(
+        f"/properties/{property_id}",
+        headers={"Authorization": f"Bearer {owner.json()['access_token']}"},
+    )
+    assert response.status_code == 200
+    assert client.get(f"/properties/{property_id}").status_code == 404

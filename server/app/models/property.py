@@ -35,12 +35,20 @@ class Property(Base):
 
     saved_by = relationship(
         "SavedListing",
-        back_populates="property"
+        back_populates="property",
+        cascade="all, delete-orphan",
     )
 
     messages = relationship(
         "Message",
-        back_populates="property"
+        back_populates="property",
+        cascade="all, delete-orphan",
+    )
+
+    viewing_requests = relationship(
+        "ViewingRequest",
+        back_populates="listing",
+        cascade="all, delete-orphan",
     )
 
     @property

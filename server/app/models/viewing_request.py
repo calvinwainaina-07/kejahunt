@@ -19,7 +19,7 @@ class ViewingRequest(Base):
     status = Column(String(32), default="Pending", nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
-    listing = relationship("Property")
+    listing = relationship("Property", back_populates="viewing_requests")
     hunter = relationship("User", foreign_keys=[hunter_id])
 
     @builtin_property

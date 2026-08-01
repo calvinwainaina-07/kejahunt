@@ -42,7 +42,7 @@ def update_viewing(viewing_id: int, payload: ViewingRequestUpdate, current_user:
     viewing = db.get(ViewingRequest, viewing_id)
     if viewing is None:
         raise HTTPException(status_code=404, detail="Viewing request not found")
-    if current_user.role != "owner" or viewing.property.owner.user_id != current_user.id:
+    if current_user.role != "owner" or viewing.listing.owner.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="You cannot update this viewing request")
     if viewing.status != "Pending":
         raise HTTPException(status_code=409, detail="This viewing request has already been handled")
@@ -52,6 +52,6 @@ def update_viewing(viewing_id: int, payload: ViewingRequestUpdate, current_user:
     create_notification(
         db, user_id=viewing.hunter_id, role="hunter", type="Viewing",
         title=f"Viewing {payload.status.lower()}",
-        message=f"Your viewing request for {viewing.property.title} was {payload.status.lower()}.", to="/bookings",
+        message=f"Your viewing request for {viewing.listing.title} was {payload.status.lower()}.", to="/bookings",
     )
     return viewing
