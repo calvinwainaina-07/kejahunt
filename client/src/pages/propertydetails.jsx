@@ -122,7 +122,7 @@ export default function PropertyDetails() {
             </div>
           </section>
 
-          <aside className="h-fit rounded-2xl border border-border bg-surface p-6">
+          {!isOwner && <aside className="h-fit rounded-2xl border border-border bg-surface p-6">
             <p className="text-xs font-semibold tracking-wide text-textSecondary">LISTED BY</p>
             <div className="mt-4 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
@@ -133,7 +133,7 @@ export default function PropertyDetails() {
                 <p className="text-sm text-textSecondary">Owner contact available through messages</p>
               </div>
             </div>
-            {!isOwner && <>
+            <>
               <button type="button" onClick={saveListing} disabled={saving} className="mt-6 block w-full rounded-lg border border-primary px-5 py-3 text-center text-sm font-semibold text-primary hover:bg-primaryLight disabled:opacity-60">
                 {saving ? "Saving..." : "Save listing"}
               </button>
@@ -143,9 +143,9 @@ export default function PropertyDetails() {
               <Link to={`/bookings?property=${property.id}`} className="mt-3 block rounded-lg border border-primary px-5 py-3 text-center text-sm font-semibold text-primary hover:bg-primaryLight">
                 Request a viewing
               </Link>
-            </>}
+            </>
             {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-          </aside>
+          </aside>}
         </div>
       </main>
     </div>
