@@ -1,7 +1,8 @@
 // TEMPORARY PROTOTYPE AUTH: the role currently comes from sessionStorage; use backend session data later.
 // Shared dashboard navigation; NavLink applies the active-route style.
 import { NavLink, useNavigate } from "react-router-dom";
-import { apiRequest, clearAccessToken } from "../api";
+import { apiRequest } from "../api";
+import { useAuth } from "./useauth.js";
 
 // Links are shown or hidden according to the signed-in user's role.
 const links = [
@@ -17,6 +18,7 @@ const links = [
 
 export default function Sidebar({ showOwnerDashboard = true, role }) {
   const navigate = useNavigate();
+  const { clearSession } = useAuth();
   // A page may set its role explicitly; otherwise use the role stored at sign-in.
   const activeRole = role || sessionStorage.getItem("kejahunt-role") || "hunter";
   // Owners do not need saved listings, while hunters do not see owner management.
@@ -52,8 +54,7 @@ export default function Sidebar({ showOwnerDashboard = true, role }) {
         type="button"
         onClick={async () => {
           try { await apiRequest("/auth/logout", { method: "POST" }); } catch { /* Always clear this browser's UI session. */ }
-          clearAccessToken();
-          sessionStorage.removeItem("kejahunt-role");
+          clearSession();
           navigate("/login");
         }}
         className="mt-auto w-fit text-sm text-primaryLight/70 transition-colors hover:text-white"

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiRequest, saveAccessToken } from "../api";
+import { useAuth } from "../components/useauth.js";
 
 export default function SignUp() {
   // Store the role choice until an authentication backend replaces this prototype flow.
@@ -9,6 +10,7 @@ export default function SignUp() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { refreshSession } = useAuth();
 
   async function createAccount(event) {
     event.preventDefault();
@@ -28,6 +30,7 @@ export default function SignUp() {
       });
       saveAccessToken(result.access_token);
       sessionStorage.setItem("kejahunt-role", result.user.role);
+      await refreshSession();
       navigate(result.user.role === "owner" ? "/owner" : "/dashboard");
     } catch (requestError) {
       setError(requestError.message);

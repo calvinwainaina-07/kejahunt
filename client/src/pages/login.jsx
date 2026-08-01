@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiRequest, saveAccessToken } from "../api";
+import { useAuth } from "../components/useauth.js";
 
 export default function Login() {
   const [selectedRole, setSelectedRole] = useState("hunter");
@@ -9,6 +10,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { refreshSession } = useAuth();
 
   async function signIn(event) {
     event.preventDefault();
@@ -22,6 +24,7 @@ export default function Login() {
       });
       saveAccessToken(result.access_token);
       sessionStorage.setItem("kejahunt-role", result.user.role);
+      await refreshSession();
       navigate(location.state?.from || (result.user.role === "owner" ? "/owner" : "/dashboard"), { replace: true });
     } catch (requestError) {
       setError(requestError.message);
