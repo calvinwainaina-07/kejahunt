@@ -46,6 +46,7 @@ def test_roommate_profile_endpoints():
     )
     assert response.status_code == 201
     assert response.json()["preferred_location"] == "Nairobi"
+    assert response.json()["user"]["full_name"] == "Hunter"
 
     me_response = client.get("/roommates/me")
     assert me_response.status_code == 200

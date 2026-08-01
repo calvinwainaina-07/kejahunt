@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.models.roommate_profile import RoommateProfile
 from app.schemas.roommate_profile import (
@@ -31,7 +31,7 @@ def create_roommate_profile(
 
 
 def get_all_roommate_profiles(db: Session):
-    return db.query(RoommateProfile).all()
+    return db.query(RoommateProfile).options(selectinload(RoommateProfile.user)).all()
 
 
 def get_roommate_profile(
@@ -40,6 +40,7 @@ def get_roommate_profile(
 ):
     return (
         db.query(RoommateProfile)
+        .options(selectinload(RoommateProfile.user))
         .filter(RoommateProfile.id == profile_id)
         .first()
     )
