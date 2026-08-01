@@ -98,6 +98,13 @@ def login(data: LoginRequest, response: Response, db: DatabaseSession) -> AuthRe
             detail="Incorrect email or password",
         )
 
+    if user.role != data.role:
+        account_role = "Property Owner" if user.role == "owner" else "House Hunter"
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"This account is registered as a {account_role}. Select that role to sign in.",
+        )
+
     token = create_access_token(user.id)
     set_auth_cookie(response, token)
 

@@ -20,7 +20,11 @@ export default function Login() {
     try {
       const result = await apiRequest("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email: formData.get("email"), password: formData.get("password") }),
+        body: JSON.stringify({
+          email: formData.get("email"),
+          password: formData.get("password"),
+          role: selectedRole,
+        }),
       });
       saveAccessToken(result.access_token);
       sessionStorage.setItem("kejahunt-role", result.user.role);
@@ -56,7 +60,8 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Choose the dashboard to open after signing in. */}
+        {/* Accounts have one role. Check the selected role before signing in so
+            a house-hunter selection can never silently open the owner area. */}
         <div className="flex gap-1.5 bg-primaryLight rounded-2xl p-1.5">
           <button
             type="button"

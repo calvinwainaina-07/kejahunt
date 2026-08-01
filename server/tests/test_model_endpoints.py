@@ -106,7 +106,7 @@ def test_message_endpoints():
 
     login_response = client.post(
         "/auth/login",
-        json={"email": "sender@example.com", "password": "secure-password-123"},
+        json={"email": "sender@example.com", "password": "secure-password-123", "role": "hunter"},
     )
     assert login_response.status_code == 200
 

@@ -62,9 +62,25 @@ def test_invalid_credentials_and_duplicate_email_are_rejected():
 
     response = client.post(
         "/auth/login",
-        json={"email": "jane@example.com", "password": "wrong-password"},
+        json={"email": "jane@example.com", "password": "wrong-password", "role": "hunter"},
     )
     assert response.status_code == 401
+
+
+def test_login_rejects_a_role_that_does_not_match_the_account():
+    client = TestClient(app)
+
+    response = client.post(
+        "/auth/login",
+        json={
+            "email": "jane@example.com",
+            "password": "correct-horse-battery-staple",
+            "role": "owner",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "This account is registered as a House Hunter. Select that role to sign in."
 
 
 def test_only_an_authenticated_owner_can_create_a_listing():
