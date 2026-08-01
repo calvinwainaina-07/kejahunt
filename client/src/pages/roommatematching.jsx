@@ -17,7 +17,10 @@ function normalizeProfile(profile) {
     budget: Number(profile?.budget) || 0,
     lifestyle: typeof profile?.lifestyle === "string" ? profile.lifestyle : "Flexible",
     tags,
-    contact: {},
+    contact: {
+      phone: typeof profile?.user?.phone === "string" ? profile.user.phone.trim() : "",
+      email: typeof profile?.user?.email === "string" ? profile.user.email.trim() : "",
+    },
   };
 }
 
@@ -148,6 +151,7 @@ function RoommateProfile({ roommate, onClose, onPrevious, onNext }) {
         <div className="bg-primary p-6 text-white"><div className="flex items-start justify-between gap-4"><div className="flex items-center gap-4"><div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15 text-2xl font-bold">{roommate.name.charAt(0)}</div><div><p className="text-xs font-semibold tracking-wider text-primaryLight">ROOMMATE PROFILE</p><h2 id="roommate-profile-title" className="mt-1 text-2xl font-bold">{roommate.name}, {roommate.age}</h2></div></div><button type="button" onClick={onClose} aria-label="Close profile" className="text-2xl text-primaryLight hover:text-white">×</button></div></div>
         <div className="p-6"><div className="rounded-xl bg-primaryLight p-4"><p className="text-xs font-semibold text-textSecondary">PREFERRED HOME</p><p className="mt-1 text-lg font-bold text-primary">{roommate.location}</p><p className="mt-1 text-sm font-medium text-textSecondary">KSh {roommate.budget.toLocaleString()}/mo · {roommate.lifestyle}</p></div><h3 className="mt-6 text-sm font-bold text-textPrimary">About</h3><p className="mt-2 text-sm leading-6 text-textSecondary">{roommate.about}</p>
         <div className="mt-5 flex flex-wrap gap-2">{roommate.tags.map((tag) => <span key={tag} className="rounded-full bg-primaryLight px-3 py-1.5 text-xs font-medium text-primary">{tag}</span>)}</div>
+        <div className="mt-5 rounded-xl bg-primaryLight p-4 text-sm text-textSecondary"><p className="text-xs font-semibold text-textSecondary">CONTACT DETAILS</p><p className="mt-2">Phone: {roommate.contact.phone ? <a href={`tel:${roommate.contact.phone}`} className="font-medium text-primary hover:text-accent">{roommate.contact.phone}</a> : "Not provided"}</p><p className="mt-1">Email: {roommate.contact.email ? <a href={`mailto:${roommate.contact.email}`} className="font-medium text-primary hover:text-accent">{roommate.contact.email}</a> : "Not provided"}</p></div>
         <div className="mt-7 grid grid-cols-2 gap-3 border-t border-border/30 pt-5"><button type="button" onClick={onPrevious} className="rounded-lg border border-primary px-4 py-3 text-sm font-semibold text-primary hover:bg-primaryLight">← Previous</button><button type="button" onClick={onNext} className="rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-white hover:bg-accent/90">Next →</button></div></div>
       </section>
     </div>

@@ -2,10 +2,12 @@ from pydantic import BaseModel, ConfigDict
 
 
 class RoommateUserResponse(BaseModel):
-    """Public account details displayed with a roommate profile."""
+    """Account details shared with other people in roommate matching."""
 
     id: int
     full_name: str
+    email: str
+    phone: str
 
     model_config = ConfigDict(from_attributes=True)
 
