@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import Sidebar from "../components/sidebar.jsx";
 import { apiRequest } from "../api";
+import { useAuth } from "../components/useauth.js";
 
 function normalizeProperty(item) {
   return {
@@ -26,6 +27,8 @@ export default function PropertyDetails() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { user } = useAuth();
+  const isOwner = user?.role === "owner";
 
   useEffect(() => {
     async function loadProperty() {
@@ -130,15 +133,17 @@ export default function PropertyDetails() {
                 <p className="text-sm text-textSecondary">Owner contact available through messages</p>
               </div>
             </div>
-            <button type="button" onClick={saveListing} disabled={saving} className="mt-6 block w-full rounded-lg border border-primary px-5 py-3 text-center text-sm font-semibold text-primary hover:bg-primaryLight disabled:opacity-60">
-              {saving ? "Saving..." : "Save listing"}
-            </button>
-            <Link to={`/messages?property=${property.id}`} className="mt-3 block rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-white hover:bg-accent/90">
-              Contact owner
-            </Link>
-            <Link to={`/bookings?property=${property.id}`} className="mt-3 block rounded-lg border border-primary px-5 py-3 text-center text-sm font-semibold text-primary hover:bg-primaryLight">
-              Request a viewing
-            </Link>
+            {!isOwner && <>
+              <button type="button" onClick={saveListing} disabled={saving} className="mt-6 block w-full rounded-lg border border-primary px-5 py-3 text-center text-sm font-semibold text-primary hover:bg-primaryLight disabled:opacity-60">
+                {saving ? "Saving..." : "Save listing"}
+              </button>
+              <Link to={`/messages?property=${property.id}`} className="mt-3 block rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-white hover:bg-accent/90">
+                Contact owner
+              </Link>
+              <Link to={`/bookings?property=${property.id}`} className="mt-3 block rounded-lg border border-primary px-5 py-3 text-center text-sm font-semibold text-primary hover:bg-primaryLight">
+                Request a viewing
+              </Link>
+            </>}
             {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
           </aside>
         </div>
