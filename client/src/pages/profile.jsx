@@ -15,7 +15,7 @@ export default function Profile() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const navigate = useNavigate();
   const { clearSession } = useAuth();
-  const role = localStorage.getItem("kejahunt-role") || "hunter";
+  const role = sessionStorage.getItem("kejahunt-role") || "hunter";
 
   useEffect(() => {
     apiRequest("/users/me").then((user) => setProfile({ fullName: user.full_name, email: user.email, phone: user.phone || "", location: user.location || "" })).catch((error) => setSavedMessage(error.message));

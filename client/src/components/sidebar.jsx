@@ -18,8 +18,8 @@ const links = [
 export default function Sidebar({ showOwnerDashboard = true, role }) {
   const navigate = useNavigate();
   const { clearSession } = useAuth();
-  // A page may set its role explicitly; otherwise use the persisted role.
-  const activeRole = role || localStorage.getItem("kejahunt-role") || "hunter";
+  // A page may set its role explicitly; otherwise use this tab's role.
+  const activeRole = role || sessionStorage.getItem("kejahunt-role") || "hunter";
   // Owners do not need saved listings, while hunters do not see owner management.
   const visibleLinks = links.filter((link) => {
     if ((!showOwnerDashboard || activeRole === "hunter") && link.to === "/owner") return false;
@@ -48,7 +48,7 @@ export default function Sidebar({ showOwnerDashboard = true, role }) {
           </NavLink>
         ))}
       </nav>
-      {/* Logging out removes the persisted browser session and role. */}
+      {/* Logging out removes this tab's session and role. */}
       <button
         type="button"
         onClick={async () => {

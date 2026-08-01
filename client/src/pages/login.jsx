@@ -27,7 +27,7 @@ export default function Login() {
         }),
       });
       saveAccessToken(result.access_token);
-      localStorage.setItem("kejahunt-role", result.user.role);
+      sessionStorage.setItem("kejahunt-role", result.user.role);
       await refreshSession();
       navigate(location.state?.from || (result.user.role === "owner" ? "/owner" : "/dashboard"), { replace: true });
     } catch (requestError) {

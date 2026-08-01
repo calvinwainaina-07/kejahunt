@@ -9,12 +9,12 @@ export function AuthProvider({ children }) {
     setState((current) => ({ ...current, status: "checking" }));
     try {
       const { user } = await apiRequest("/auth/user");
-      localStorage.setItem("kejahunt-role", user.role);
+      sessionStorage.setItem("kejahunt-role", user.role);
       setState({ status: "authenticated", user });
       return user;
     } catch (error) {
       clearAccessToken();
-      localStorage.removeItem("kejahunt-role");
+      sessionStorage.removeItem("kejahunt-role");
       setState({ status: "unauthenticated", user: null });
       throw error;
     }
@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
 
   const clearSession = useCallback(() => {
     clearAccessToken();
-    localStorage.removeItem("kejahunt-role");
+    sessionStorage.removeItem("kejahunt-role");
     setState({ status: "unauthenticated", user: null });
   }, []);
 

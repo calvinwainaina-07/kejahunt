@@ -32,9 +32,11 @@ export async function apiRequest(path, options = {}) {
   const [pathname, query] = path.split("?");
   const normalizedPath = COLLECTION_PATHS.has(pathname) ? `${pathname}/` : pathname;
   const requestPath = query ? `${normalizedPath}?${query}` : normalizedPath;
-  // localStorage survives browser restarts, so a valid returning user's
-  // session can be restored. The server still validates the signed token.
-  const accessToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+  // Keep the bearer token per tab. This prevents signing in as a different
+  // user in one tab from changing the identity used by another open tab. A
+  // persistent, HTTP-only cookie still restores a returning user's session
+  // after the browser is restarted.
+  const accessToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
   let response;
   try {
     response = await fetch(`${API_URL}${requestPath}`, {
@@ -61,9 +63,9 @@ export async function apiRequest(path, options = {}) {
 }
 
 export function saveAccessToken(token) {
-  if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  if (token) sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
 }
 
 export function clearAccessToken() {
-  localStorage.removeItem(TOKEN_STORAGE_KEY);
+  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
 }
