@@ -19,12 +19,12 @@ def get_current_user(
         detail="Could not validate credentials",
     )
 
-    token = request.cookies.get(COOKIE_NAME)
-    if token is None:
-        authorization = request.headers.get("Authorization", "")
-        scheme, _, bearer_token = authorization.partition(" ")
-        if scheme.lower() == "bearer" and bearer_token:
-            token = bearer_token
+    # The frontend stores the token returned by the latest sign-in. Prefer it
+    # over a cookie so a stale cross-site cookie cannot restore an older
+    # account (for example, an owner session after registering as a hunter).
+    authorization = request.headers.get("Authorization", "")
+    scheme, _, bearer_token = authorization.partition(" ")
+    token = bearer_token if scheme.lower() == "bearer" and bearer_token else request.cookies.get(COOKIE_NAME)
     if token is None:
         raise credentials_exception
 

@@ -14,6 +14,7 @@ from fastapi.testclient import TestClient
 from app.database import SessionLocal
 from app.main import app
 from app.models.user import User
+from app.auth.utils import create_access_token
 
 
 def test_registration_hashes_password_and_starts_session():
@@ -81,6 +82,39 @@ def test_login_rejects_a_role_that_does_not_match_the_account():
 
     assert response.status_code == 403
     assert response.json()["detail"] == "This account is registered as a House Hunter. Select that role to sign in."
+
+
+def test_bearer_token_takes_precedence_over_a_stale_session_cookie():
+    client = TestClient(app)
+    hunter = client.post(
+        "/auth/register",
+        json={
+            "full_name": "Bearer Hunter",
+            "email": "bearer-hunter@example.com",
+            "password": "correct-horse-battery-staple",
+            "role": "hunter",
+        },
+    )
+    assert hunter.status_code == 201
+
+    owner = client.post(
+        "/auth/register",
+        json={
+            "full_name": "Cookie Owner",
+            "email": "cookie-owner@example.com",
+            "password": "correct-horse-battery-staple",
+            "role": "owner",
+        },
+    )
+    assert owner.status_code == 201
+
+    response = client.get(
+        "/auth/user",
+        headers={"Authorization": f"Bearer {create_access_token(hunter.json()['user']['id'])}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["user"]["email"] == "bearer-hunter@example.com"
 
 
 def test_only_an_authenticated_owner_can_create_a_listing():
