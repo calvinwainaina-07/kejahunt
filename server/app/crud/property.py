@@ -42,10 +42,19 @@ def get_all_properties(
     available: bool | None = None,
 ):
     """
-    Retrieve all property listings.
+    Retrieve all valid property listings.
     """
 
     query = db.query(Property)
+
+    # Ignore old placeholder/invalid records
+    query = query.filter(
+        Property.title != "string",
+        Property.location != "string",
+        Property.house_type != "string",
+        Property.rent > 0,
+    )
+
     if location:
         query = query.filter(Property.location.ilike(f"%{location}%"))
     if max_rent is not None:
@@ -56,8 +65,8 @@ def get_all_properties(
         query = query.filter(Property.bedrooms >= bedrooms)
     if available is not None:
         query = query.filter(Property.available == available)
-    return query.all()
 
+    return query.all()
 
 def get_property(
     db: Session,
