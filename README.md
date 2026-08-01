@@ -22,6 +22,12 @@ cp .env.example .env
 The `.env.example` file contains a development JWT secret. Replace it with a
 unique secret before deploying the API.
 
+Accounts, listings, saved homes, messages, and viewing requests are stored in
+`server/kejahunt.db` by default. The application uses that same file even if
+the API is started from a different working directory. Do not delete this file
+when restarting or deploying the API; use `DATABASE_URL` for a durable managed
+database in production.
+
 In a second terminal, start the frontend:
 
 ```bash

@@ -20,7 +20,7 @@ router = APIRouter()
 DatabaseSession = Annotated[Session, Depends(get_db)]
 CurrentUser: TypeAlias = Annotated[User, Depends(get_current_user)]
 
-COOKIE_MAX_AGE_SECONDS = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")) * 60
+COOKIE_MAX_AGE_SECONDS = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", str(60 * 24 * 30))) * 60
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
 

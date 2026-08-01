@@ -1,4 +1,3 @@
-// TEMPORARY PROTOTYPE STORAGE: replace localStorage profile and password actions with authenticated API requests.
 // Profile workspace for viewing and updating a user's contact details and password.
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +15,7 @@ export default function Profile() {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const navigate = useNavigate();
   const { clearSession } = useAuth();
-  const role = sessionStorage.getItem("kejahunt-role") || "hunter";
+  const role = localStorage.getItem("kejahunt-role") || "hunter";
 
   useEffect(() => {
     apiRequest("/users/me").then((user) => setProfile({ fullName: user.full_name, email: user.email, phone: user.phone || "", location: user.location || "" })).catch((error) => setSavedMessage(error.message));

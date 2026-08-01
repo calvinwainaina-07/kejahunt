@@ -29,7 +29,7 @@ export default function SignUp() {
         }),
       });
       saveAccessToken(result.access_token);
-      sessionStorage.setItem("kejahunt-role", result.user.role);
+      localStorage.setItem("kejahunt-role", result.user.role);
       await refreshSession();
       navigate(result.user.role === "owner" ? "/owner" : "/dashboard");
     } catch (requestError) {

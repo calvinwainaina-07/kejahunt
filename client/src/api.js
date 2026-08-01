@@ -32,7 +32,9 @@ export async function apiRequest(path, options = {}) {
   const [pathname, query] = path.split("?");
   const normalizedPath = COLLECTION_PATHS.has(pathname) ? `${pathname}/` : pathname;
   const requestPath = query ? `${normalizedPath}?${query}` : normalizedPath;
-  const accessToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+  // localStorage survives browser restarts, so a valid returning user's
+  // session can be restored. The server still validates the signed token.
+  const accessToken = localStorage.getItem(TOKEN_STORAGE_KEY);
   let response;
   try {
     response = await fetch(`${API_URL}${requestPath}`, {
@@ -59,9 +61,9 @@ export async function apiRequest(path, options = {}) {
 }
 
 export function saveAccessToken(token) {
-  if (token) sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+  if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
 }
 
 export function clearAccessToken() {
-  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
 }

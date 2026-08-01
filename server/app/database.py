@@ -1,9 +1,17 @@
 import os
+from pathlib import Path
 
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./kejahunt.db")
+# A relative SQLite URL is resolved from the process' current working
+# directory.  That meant starting the API from the repository root instead of
+# ``server/`` silently created a second, empty database and made saved users
+# and listings look as though they had disappeared.  Keep the default database
+# beside the server code so it is always the same file.  Deployments can still
+# provide DATABASE_URL (for example a managed PostgreSQL database).
+DEFAULT_DATABASE_PATH = Path(__file__).resolve().parent.parent / "kejahunt.db"
+DATABASE_URL = os.getenv("DATABASE_URL") or f"sqlite:///{DEFAULT_DATABASE_PATH}"
 
 engine = create_engine(
     DATABASE_URL,

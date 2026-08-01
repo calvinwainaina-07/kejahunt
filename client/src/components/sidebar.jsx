@@ -1,4 +1,3 @@
-// TEMPORARY PROTOTYPE AUTH: the role currently comes from sessionStorage; use backend session data later.
 // Shared dashboard navigation; NavLink applies the active-route style.
 import { NavLink, useNavigate } from "react-router-dom";
 import { apiRequest } from "../api";
@@ -19,8 +18,8 @@ const links = [
 export default function Sidebar({ showOwnerDashboard = true, role }) {
   const navigate = useNavigate();
   const { clearSession } = useAuth();
-  // A page may set its role explicitly; otherwise use the role stored at sign-in.
-  const activeRole = role || sessionStorage.getItem("kejahunt-role") || "hunter";
+  // A page may set its role explicitly; otherwise use the persisted role.
+  const activeRole = role || localStorage.getItem("kejahunt-role") || "hunter";
   // Owners do not need saved listings, while hunters do not see owner management.
   const visibleLinks = links.filter((link) => {
     if ((!showOwnerDashboard || activeRole === "hunter") && link.to === "/owner") return false;
@@ -49,7 +48,7 @@ export default function Sidebar({ showOwnerDashboard = true, role }) {
           </NavLink>
         ))}
       </nav>
-      {/* Clearing the session role makes the next visit start with a new role choice. */}
+      {/* Logging out removes the persisted browser session and role. */}
       <button
         type="button"
         onClick={async () => {
