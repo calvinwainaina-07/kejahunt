@@ -41,7 +41,7 @@ export default function Bookings() {
   useEffect(() => { load(); }, [load]);
 
   if (loading) {
-    return <main className="grid min-h-screen place-items-center bg-bg p-6 text-sm text-textSecondary">Loading viewing requests…</main>;
+    return <main className="grid min-h-screen place-items-center bg-bg p-6"><span aria-label="Loading" className="h-7 w-7 animate-spin rounded-full border-2 border-primary/20 border-t-primary" /></main>;
   }
 
   if (!account) {

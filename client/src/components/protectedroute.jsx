@@ -6,7 +6,7 @@ export default function ProtectedRoute({ children, roles }) {
   const state = useAuth();
 
   if (state.status === "checking") {
-    return <main className="grid min-h-screen place-items-center bg-bg p-6 text-sm text-textSecondary">Checking your session…</main>;
+    return <main className="grid min-h-screen place-items-center bg-bg p-6"><span aria-label="Loading" className="h-7 w-7 animate-spin rounded-full border-2 border-primary/20 border-t-primary" /></main>;
   }
 
   if (state.status === "unauthenticated") {
