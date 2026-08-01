@@ -14,6 +14,7 @@ export default function Bookings() {
   const [searchParams] = useSearchParams();
   const requestedPropertyId = Number(searchParams.get("property"));
   const [account, setAccount] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [properties, setProperties] = useState([]);
   const [requests, setRequests] = useState([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState("");
@@ -25,6 +26,8 @@ export default function Bookings() {
 
   const load = useCallback(async () => {
     try {
+      setLoading(true);
+      setError("");
       const [auth, propertyData, viewingData] = await Promise.all([apiRequest("/auth/user"), apiRequest("/properties?available=true"), apiRequest("/viewings")]);
       setAccount(auth.user);
       const availableProperties = (propertyData || []).filter((property) => !isPlaceholderListing(property));
@@ -33,10 +36,19 @@ export default function Bookings() {
       const requested = availableProperties.find((property) => property.id === requestedPropertyId);
       setSelectedPropertyId((current) => current || requested?.id || availableProperties[0]?.id || "");
     } catch (requestError) { setError(requestError.message); }
+    finally { setLoading(false); }
   }, [requestedPropertyId]);
   useEffect(() => { load(); }, [load]);
 
-  const role = account?.role || "hunter";
+  if (loading) {
+    return <main className="grid min-h-screen place-items-center bg-bg p-6 text-sm text-textSecondary">Loading viewing requests…</main>;
+  }
+
+  if (!account) {
+    return <main className="grid min-h-screen place-items-center bg-bg p-6 text-sm text-red-600">{error || "Unable to load your account."}</main>;
+  }
+
+  const role = account.role;
   const propertyFor = (id) => properties.find((property) => property.id === id);
   const selectedProperty = propertyFor(Number(selectedPropertyId));
 
