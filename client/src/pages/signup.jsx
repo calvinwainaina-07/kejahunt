@@ -1,7 +1,7 @@
 // Registration page that routes a new user to their selected role's workspace.
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { apiRequest } from "../api";
+import { apiRequest, saveAccessToken } from "../api";
 
 export default function SignUp() {
   // Store the role choice until an authentication backend replaces this prototype flow.
@@ -26,6 +26,7 @@ export default function SignUp() {
           phone: formData.get("phone"),
         }),
       });
+      saveAccessToken(result.access_token);
       sessionStorage.setItem("kejahunt-role", result.user.role);
       navigate(result.user.role === "owner" ? "/owner" : "/dashboard");
     } catch (requestError) {

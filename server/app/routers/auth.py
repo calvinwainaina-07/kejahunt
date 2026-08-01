@@ -21,6 +21,8 @@ DatabaseSession = Annotated[Session, Depends(get_db)]
 CurrentUser: TypeAlias = Annotated[User, Depends(get_current_user)]
 
 COOKIE_MAX_AGE_SECONDS = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")) * 60
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax").lower()
 
 
 def set_auth_cookie(response: Response, token: str) -> None:
@@ -30,8 +32,8 @@ def set_auth_cookie(response: Response, token: str) -> None:
         value=token,
         max_age=COOKIE_MAX_AGE_SECONDS,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
         path="/",
     )
 
@@ -75,11 +77,13 @@ def register(data: RegisterRequest, response: Response, db: DatabaseSession) -> 
 
     db.refresh(user)
 
-    set_auth_cookie(response, create_access_token(user.id))
+    token = create_access_token(user.id)
+    set_auth_cookie(response, token)
 
     return AuthResponse(
         user=user,
         message="Registration successful",
+        access_token=token,
     )
 
 
@@ -94,11 +98,13 @@ def login(data: LoginRequest, response: Response, db: DatabaseSession) -> AuthRe
             detail="Incorrect email or password",
         )
 
-    set_auth_cookie(response, create_access_token(user.id))
+    token = create_access_token(user.id)
+    set_auth_cookie(response, token)
 
     return AuthResponse(
         user=user,
         message="Login successful",
+        access_token=token,
     )
 
 
@@ -108,8 +114,8 @@ def logout(response: Response) -> Response:
     response.delete_cookie(
         key=COOKIE_NAME,
         path="/",
-        secure=True,
-        samesite="none",
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
     )
     response.status_code = status.HTTP_204_NO_CONTENT
     return response
@@ -121,4 +127,5 @@ def get_user(current_user: CurrentUser) -> AuthResponse:
     return AuthResponse(
         user=current_user,
         message="Authenticated user",
+        access_token="",
     )

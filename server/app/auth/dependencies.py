@@ -21,6 +21,11 @@ def get_current_user(
 
     token = request.cookies.get(COOKIE_NAME)
     if token is None:
+        authorization = request.headers.get("Authorization", "")
+        scheme, _, bearer_token = authorization.partition(" ")
+        if scheme.lower() == "bearer" and bearer_token:
+            token = bearer_token
+    if token is None:
         raise credentials_exception
 
     try:

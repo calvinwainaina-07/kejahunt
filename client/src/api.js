@@ -1,4 +1,5 @@
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "http://127.0.0.1:8000");
+const TOKEN_STORAGE_KEY = "kejahunt-access-token";
 const COLLECTION_PATHS = new Set([
   "/properties",
   "/roommates",
@@ -31,12 +32,14 @@ export async function apiRequest(path, options = {}) {
   const [pathname, query] = path.split("?");
   const normalizedPath = COLLECTION_PATHS.has(pathname) ? `${pathname}/` : pathname;
   const requestPath = query ? `${normalizedPath}?${query}` : normalizedPath;
+  const accessToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
   let response;
   try {
     response = await fetch(`${API_URL}${requestPath}`, {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         ...options.headers,
       },
       ...options,
@@ -53,4 +56,12 @@ export async function apiRequest(path, options = {}) {
   if (response.status === 204) return null;
   const body = await response.text();
   return body ? JSON.parse(body) : null;
+}
+
+export function saveAccessToken(token) {
+  if (token) sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+}
+
+export function clearAccessToken() {
+  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
 }

@@ -1,7 +1,7 @@
 // Authentication screen and entry point.
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { apiRequest } from "../api";
+import { apiRequest, saveAccessToken } from "../api";
 
 export default function Login() {
   const [selectedRole, setSelectedRole] = useState("hunter");
@@ -20,6 +20,7 @@ export default function Login() {
         method: "POST",
         body: JSON.stringify({ email: formData.get("email"), password: formData.get("password") }),
       });
+      saveAccessToken(result.access_token);
       sessionStorage.setItem("kejahunt-role", result.user.role);
       navigate(location.state?.from || (result.user.role === "owner" ? "/owner" : "/dashboard"), { replace: true });
     } catch (requestError) {

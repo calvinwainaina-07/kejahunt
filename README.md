@@ -39,8 +39,11 @@ VITE_API_URL=http://127.0.0.1:8000
 For cookie-based authentication in another frontend origin, configure the backend before starting it:
 
 ```bash
-FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173 uvicorn app.main:app --reload
+FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173 COOKIE_SECURE=false COOKIE_SAMESITE=lax uvicorn app.main:app --reload
 ```
+
+For a deployed frontend on another domain, set `FRONTEND_ORIGINS` to its exact
+HTTPS URL, `COOKIE_SECURE=true`, and `COOKIE_SAMESITE=none`.
 
 ## API-connected features
 

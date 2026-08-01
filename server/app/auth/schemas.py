@@ -29,3 +29,4 @@ class AuthResponse(BaseModel):
 
     user: UserResponse
     message: str
+    access_token: str

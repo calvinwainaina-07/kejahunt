@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { apiRequest } from "../api";
+import { apiRequest, clearAccessToken } from "../api";
 
 export default function ProtectedRoute({ children, roles }) {
   const location = useLocation();
@@ -17,6 +17,7 @@ export default function ProtectedRoute({ children, roles }) {
       })
       .catch(() => {
         if (!active) return;
+        clearAccessToken();
         sessionStorage.removeItem("kejahunt-role");
         setState({ status: "unauthenticated", user: null });
       });
